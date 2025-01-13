@@ -33,6 +33,12 @@ app.use('/user', userRoute);
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'accueil.html'));
 });
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
+});
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
 server.listen(8080, () => {
     console.log('Server running https://localhost:8080');
 });
