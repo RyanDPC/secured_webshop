@@ -1,13 +1,38 @@
 const express = require("express");
-
-
+const path = require("path");
+const https = require("https");
+const fs = require("fs");
+const session = require("express-session");
 const app = express();
 const userRoute = require('./routes/User');
+
+const sslOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'ssl', 'server.key')),
+    cert: fs.readFileSync(path.join(__dirname, 'ssl', 'server.cert')),
+};
+const server = https.createServer(sslOptions, app);
+
+app.set('public', path.join(__dirname, 'public'));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public/js')));
+app.use(express.static(path.join(__dirname, 'public/css')));
+
+app.use(session({
+    secret: 'server.cert',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        secure: true,
+        httpOnly: true,
+        sameSite: 'strict',
+    },
+}));
+
 app.use('/user', userRoute);
 
-
-
-// Démarrage du serveur
-app.listen(8080, () => {
-    console.log('Server running on port 8080');
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'accueil.html'));
+});
+server.listen(8080, () => {
+    console.log('Server running https://localhost:8080');
 });
