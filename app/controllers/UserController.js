@@ -33,10 +33,7 @@ exports.create = async (req, res) => {
     const hashedPassword = hashPassword(password_hash, salt);
 
     // Insérer l'utilisateur dans la base de données
-    const query = `
-            INSERT INTO users (username, email, password_hash, salt, admin)
-            VALUES (?, ?, ?, ?, ?)
-        `;
+    const query = `INSERT INTO users (username, email, password_hash, salt, admin) VALUES (?, ?, ?, ?, ?)`;
     db.query(
       query,
       [username, email, hashedPassword, salt, admin],
@@ -76,6 +73,7 @@ exports.login = async (req, res) => {
       const user = results[0];
       const hashedPassword = hashPassword(password_hash, user.salt);
 
+      // Vérification du mot de passe
       if (hashedPassword === user.password_hash) {
         req.session.user = {
           id: user.id,
@@ -99,13 +97,37 @@ exports.login = async (req, res) => {
   }
 };
 
+// Affichage du profil de l'utilisateur
+exports.showProfile = async (req, res) => {
+  try {
+    const userId = req.user.id; // L'utilisateur est déjà authentifié, nous avons son ID dans req.user
+    const query = `SELECT * FROM users WHERE id = ? LIMIT 1`;
+
+    db.query(query, [userId], (err, results) => {
+      if (err) {
+        console.error("Erreur lors de la récupération du profil:", err);
+        return res.status(500).send("Erreur serveur");
+      }
+      if (results.length === 0) {
+        return res.status(404).send("Utilisateur non trouvé");
+      }
+
+      const user = results[0];
+      res.render("profile", { user: user });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Erreur serveur");
+  }
+};
+
 // Vérification si le nom d'utilisateur ou l'email existe déjà
 async function checkIfExists(username, email) {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1`;
     db.query(query, [username, email], (err, results) => {
       if (err) return reject(err);
-      resolve(results.length > 0);
+      resolve(results.length > 0); // Retourne true si l'utilisateur existe déjà
     });
   });
 }

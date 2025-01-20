@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title><%= title %> - Mini Games Store</title>
+     <!-- Lien vers le CSS spécifique à la page -->
+     <% if (cssFile) { %>
+        <link rel="stylesheet" href="/<%= cssFile %>">
+        <link rel="stylesheet" href="/home.css">
+    <% } else { %>
+        <link rel="stylesheet" href="/styles.css"> <!-- Le style global -->
+    <% } %> <!-- Le style global -->
+    <link rel="icon" href="favicon.ico">
+</head>
+<body>
+
+    
+        <%- include('../partials/header') %><!-- Contenu dynamique du header -->
+
+
+    <main>
+        <%- body %> <!-- Le contenu spécifique de chaque page -->
+    </main>
+
+ 
+        <%- include('../partials/footer') %> <!-- Contenu dynamique du footer -->
+   
+    <script src="/api.js"></script> <!-- Script commun -->
+    <%- script %> <!-- Inclut les scripts supplémentaires, le cas échéant -->
+</body>
+</html>

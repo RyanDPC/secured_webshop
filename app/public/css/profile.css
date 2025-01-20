@@ -34,38 +34,31 @@ header nav ul li a:hover {
     color: #28a745;
 }
 
-/* Conteneur principal de la page d'accueil */
-.home-container {
+/* Conteneur du profil */
+.profile-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 4rem 2rem;
     text-align: center;
-    background-color: #2d2f35; /* Fond sombre pour le container */
+    background-color: #2d2f35;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.home-container h1 {
+.profile-container h1 {
     color: #fff;
     font-size: 3rem;
     margin-bottom: 1.5rem;
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
 }
 
-.home-container p {
+.profile-container p {
     font-size: 1.2rem;
     color: #bbb;
     margin-bottom: 2rem;
 }
 
-/* Boutons de connexion et création de compte */
-.buttons {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-}
-
-.btn {
+.profile-container .btn {
     padding: 0.8rem 2.5rem;
     font-size: 1.2rem;
     background-color: #28a745;
@@ -77,20 +70,14 @@ header nav ul li a:hover {
     text-decoration: none;
 }
 
-.btn:hover {
+.profile-container .btn:hover {
     background-color: #218838;
     transform: scale(1.05);
 }
 
-/* Effet de focus pour les liens */
-.btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #28a745;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
-    .home-container {
+    .profile-container {
         padding: 3rem 1rem;
     }
 
@@ -105,7 +92,7 @@ header nav ul li a:hover {
 }
 
 @media (max-width: 480px) {
-    .home-container {
+    .profile-container {
         padding: 2rem 1rem;
     }
 
