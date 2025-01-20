@@ -10,8 +10,9 @@ services:
         container_name: db_container
         environment:
             MYSQL_ROOT_PASSWORD: root
-            MYSQL_USER: db_user
-            MYSQL_PASSWORD: db_user_pass
+            MYSQL_USER: Ryan
+            MYSQL_PASSWORD: test
+            MYSQL_DATABASE: MyGameStore 
         restart: always
         ports:
             - "6033:3306"
@@ -41,9 +42,10 @@ services:
         environment:
             #- NODE_ENV=production
             - NODE_ENV=development
-        volumes:   
-            - ./app:/home/node/app
-            - /home/node/app/node_modules
+        volumes:  
+        - ./app:/home/node/app
+        - ./ssl:/home/node/app/ssl
+
         expose:
             - "8080"
         ports: 
