@@ -7,6 +7,7 @@
     "start": "nodemon server.js -L"
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "express": "^4.19.1",
     "express-ejs-layouts": "^2.5.1",

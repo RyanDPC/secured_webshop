@@ -46,14 +46,15 @@ app.set("layout extractScripts", true);
 // Routes API
 app.use("/api/users", userRoute);
 
-// Routes HTML (converties en EJS)
-app.get("/", (_, res) =>
+app.get("/", (req, res) =>
   res.render("pages/home", {
     title: "Accueil",
     layout: "components/layout",
     cssFile: "home.css",
+    user: req.session.user || null, // Utilisation correcte de req.session.user
   })
 );
+
 app.get("/register", (_, res) =>
   res.render("pages/register", {
     title: "Créer un compte",
@@ -61,22 +62,41 @@ app.get("/register", (_, res) =>
     cssFile: "form.css",
   })
 );
-app.get("/login", (_, res) =>
+
+app.get("/login", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/");
+  }
   res.render("pages/login", {
     title: "Se connecter",
     layout: "components/layout",
     cssFile: "form.css",
-  })
-);
-app.get("/profile", (_, res) =>
+  });
+});
+
+app.get("/profile", (req, res) => {
+  const user = req.session.user || null; // Utilisation correcte de req.session.user
   res.render("pages/profile", {
     title: "Mon Profil",
-    username: "Utilisateur123",
-    email: "utilisateur@example.com",
+    username: user ? user.username : "Utilisateur123", // Exemple d'utilisation du nom d'utilisateur
+    email: user ? user.email : "utilisateur@example.com", // Exemple d'utilisation de l'email
     cssFile: "profile.css",
-  })
-);
+  });
+});
 
+// Route pour déconnexion
+app.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Erreur lors de la déconnexion :", err);
+      return res
+        .status(500)
+        .json({ message: "Erreur lors de la déconnexion." });
+    }
+    res.clearCookie("refreshToken");
+    res.status(200).json({ message: "Déconnexion réussie." });
+  });
+});
 // Serveur HTTPS
 const httpsServer = https.createServer(sslOptions, app);
 

@@ -9,6 +9,6 @@ router.post("/signup", controller.create);
 // Route pour la connexion
 router.post("/login", controller.login);
 
-router.post("/profile", auth.checkAuth, controller.showProfile);
+router.post("/profile", auth.authenticateToken, controller.showProfile);
 
 module.exports = router;
