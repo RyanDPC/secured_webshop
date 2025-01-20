@@ -10,9 +10,9 @@ services:
         container_name: db_container
         environment:
             MYSQL_ROOT_PASSWORD: root
-            MYSQL_USER: Ryan
-            MYSQL_PASSWORD: test
-            MYSQL_DATABASE: MyGameStore 
+            MYSQL_USER: db_user
+            MYSQL_PASSWORD: db_user_pass
+            MYSQL_DATABASE: MiniGamesStore 
         restart: always
         ports:
             - "6033:3306"

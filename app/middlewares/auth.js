@@ -1,6 +1,6 @@
 // Importer les modules nécessaires
 const jwt = require("jsonwebtoken");
-require("dotenv").config(); // Charger les variables d'environnement
+require("dotenv").config({ path: "../.env" }); // Charger les variables d'environnement
 
 // Vérification de l'existence des secrets
 if (!process.env.JWT_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
