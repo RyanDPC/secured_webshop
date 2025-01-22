@@ -30,7 +30,10 @@ app.use(
     },
   })
 );
-
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
 // Configuration des répertoires statiques
 const publicPath = path.resolve(__dirname, "public");
 app.use(express.static(publicPath));
@@ -76,12 +79,16 @@ app.get("/login", (req, res) => {
 
 app.get("/profile", (req, res) => {
   const user = req.session.user || null; // Utilisation correcte de req.session.user
-  res.render("pages/profile", {
-    title: "Mon Profil",
-    username: user ? user.username : "Utilisateur123", // Exemple d'utilisation du nom d'utilisateur
-    email: user ? user.email : "utilisateur@example.com", // Exemple d'utilisation de l'email
-    cssFile: "profile.css",
-  });
+  if (!user) {
+    return res.redirect("/login");
+  } else {
+    res.render("pages/profile", {
+      title: "Mon Profil",
+      username: user, // Exemple d'utilisation du nom d'utilisateur
+      email: user, // Exemple d'utilisation de l'email
+      cssFile: "profile.css",
+    });
+  }
 });
 
 // Route pour déconnexion
