@@ -1,5 +1,4 @@
-const crypto = require("crypto");
-const db = require("../db"); // Assure-toi que ce chemin est correct
+const { User } = require("../models/User"); // Assure-toi d'importer le modèle User
 
 // Créer un utilisateur
 exports.create = async (req, res) => {
@@ -21,7 +20,12 @@ exports.create = async (req, res) => {
     }
 
     // Vérifier si le nom d'utilisateur ou l'email existe déjà
-    const userExists = await checkIfExists(username, email);
+    const userExists = await User.findOne({
+      where: {
+        [Sequelize.Op.or]: [{ username }, { email }],
+      },
+    });
+
     if (userExists) {
       return res
         .status(400)
@@ -30,28 +34,23 @@ exports.create = async (req, res) => {
 
     // Générer un sel pour le mot de passe
     const salt = crypto.randomBytes(16).toString("hex");
-    const hashedPassword = hashPassword(password_hash, salt);
+    const hashedPassword = User.hashPassword(password_hash, salt);
 
-    // Insérer l'utilisateur dans la base de données
-    const query = `INSERT INTO users (username, email, password_hash, salt, admin) VALUES (?, ?, ?, ?, ?)`;
-    db.query(
-      query,
-      [username, email, hashedPassword, salt, admin],
-      (err, results) => {
-        if (err) {
-          console.error("Erreur lors de l'insertion de l'utilisateur:", err);
-          return res
-            .status(500)
-            .json({ message: "Erreur lors de l'inscription" });
-        }
-        return res.status(201).json({
-          id: results.insertId,
-          username,
-          email,
-          admin,
-        });
-      }
-    );
+    // Créer un nouvel utilisateur
+    const newUser = await User.create({
+      username,
+      email,
+      password_hash: hashedPassword,
+      salt,
+      admin,
+    });
+
+    return res.status(201).json({
+      id: newUser.id,
+      username: newUser.username,
+      email: newUser.email,
+      admin: newUser.admin,
+    });
   } catch (err) {
     console.error("Erreur lors de l'inscription:", err);
     return res.status(500).json({ message: "Erreur lors de l'inscription" });
@@ -64,33 +63,33 @@ exports.login = async (req, res) => {
     const { username, password_hash } = req.body;
 
     // Rechercher l'utilisateur dans la base de données
-    const query = `SELECT * FROM users WHERE username = ? LIMIT 1`;
-    db.query(query, [username], (err, results) => {
-      if (err) return res.status(500).json({ message: "Erreur de connexion" });
-      if (results.length === 0)
-        return res.status(400).json({ message: "Utilisateur non trouvé" });
-
-      const user = results[0];
-      const hashedPassword = hashPassword(password_hash, user.salt);
-
-      // Vérification du mot de passe
-      if (hashedPassword === user.password_hash) {
-        req.session.user = {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          admin: user.admin,
-        };
-        return res.status(200).json({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          admin: user.admin,
-        });
-      } else {
-        return res.status(400).json({ message: "Mot de passe incorrect" });
-      }
+    const user = await User.findOne({
+      where: { username },
     });
+
+    if (!user) {
+      return res.status(400).json({ message: "Utilisateur non trouvé" });
+    }
+
+    // Vérification du mot de passe
+    const hashedPassword = User.hashPassword(password_hash, user.salt);
+
+    if (hashedPassword === user.password_hash) {
+      req.session.user = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        admin: user.admin,
+      };
+      return res.status(200).json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        admin: user.admin,
+      });
+    } else {
+      return res.status(400).json({ message: "Mot de passe incorrect" });
+    }
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Erreur de connexion" });
@@ -101,40 +100,15 @@ exports.login = async (req, res) => {
 exports.showProfile = async (req, res) => {
   try {
     const userId = req.user.id; // L'utilisateur est déjà authentifié, nous avons son ID dans req.user
-    const query = `SELECT * FROM users WHERE id = ? LIMIT 1`;
+    const user = await User.findOne({ where: { id: userId } });
 
-    db.query(query, [userId], (err, results) => {
-      if (err) {
-        console.error("Erreur lors de la récupération du profil:", err);
-        return res.status(500).send("Erreur serveur");
-      }
-      if (results.length === 0) {
-        return res.status(404).send("Utilisateur non trouvé");
-      }
+    if (!user) {
+      return res.status(404).send("Utilisateur non trouvé");
+    }
 
-      const user = results[0];
-      res.render("profile", { user: user });
-    });
+    res.render("profile", { user: user });
   } catch (error) {
     console.error(error);
     res.status(500).send("Erreur serveur");
   }
 };
-
-// Vérification si le nom d'utilisateur ou l'email existe déjà
-async function checkIfExists(username, email) {
-  return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1`;
-    db.query(query, [username, email], (err, results) => {
-      if (err) return reject(err);
-      resolve(results.length > 0); // Retourne true si l'utilisateur existe déjà
-    });
-  });
-}
-
-// Fonction pour hacher le mot de passe avec le sel
-function hashPassword(password_hash, salt) {
-  const hash = crypto.createHash("sha256");
-  hash.update(password_hash + salt); // Appliquer le sel au mot de passe
-  return hash.digest("hex"); // Générer le hachage hexadécimal du mot de passe
-}

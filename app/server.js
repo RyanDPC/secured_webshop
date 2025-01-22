@@ -4,8 +4,8 @@ const https = require("https");
 const fs = require("fs");
 const session = require("express-session");
 const expressLayouts = require("express-ejs-layouts");
-
 const app = express();
+const { initDb, sequelize } = require("./db/sequelize"); // Importer initDb
 const userRoute = require("./routes/User");
 
 // Options SSL
@@ -16,6 +16,16 @@ const sslOptions = {
 
 // Middleware JSON
 app.use(express.json());
+
+// Test de connexion à la base de données
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log("Connexion réussie à la base de données");
+  })
+  .catch((err) => {
+    console.error("Impossible de se connecter à la base de données:", err);
+  });
 
 // Configuration des sessions
 app.use(
@@ -104,9 +114,13 @@ app.post("/logout", (req, res) => {
     res.status(200).json({ message: "Déconnexion réussie." });
   });
 });
-// Serveur HTTPS
-const httpsServer = https.createServer(sslOptions, app);
+initDb()
+  .then(() => {
+    // Serveur HTTPS
+    const httpsServer = https.createServer(sslOptions, app);
 
-httpsServer.listen(8080, () => {
-  console.log("Serveur HTTPS lancé sur https://localhost:8080");
-});
+    httpsServer.listen(8080, () => {
+      console.log("Serveur HTTPS lancé sur https://localhost:8080");
+    });
+  })
+  .catch((error) => console.error("Erreur de sync:", error));
