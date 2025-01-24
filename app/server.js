@@ -114,6 +114,7 @@ app.post("/logout", (req, res) => {
     res.status(200).json({ message: "Déconnexion réussie." });
   });
 });
+
 initDb()
   .then(() => {
     // Serveur HTTPS

@@ -1,9 +1,9 @@
-const { Sequelize, DataTypes } = require("sequelize");
 const crypto = require("crypto");
+const { DataTypes } = require("sequelize");
 
-const UserModel = (sequelize, DataTypes) =>
-  sequelize.define(
-    "User", // The name of the model
+const UserModel = (sequelize) => {
+  const User = sequelize.define(
+    "User", // Nom du modèle
     {
       username: {
         type: DataTypes.STRING,
@@ -41,15 +41,18 @@ const UserModel = (sequelize, DataTypes) =>
     },
     {
       tableName: "users",
-      timestamps: true, // If you're not using `createdAt` and `updatedAt` columns, set this to false
+      timestamps: true, // Si tu veux `createdAt` et `updatedAt`
     }
   );
 
-// Add static method `hashPassword` to the model
-UserModel.hashPassword = function (password, salt) {
-  const hash = crypto.createHash("sha256");
-  hash.update(password + salt); // Apply the salt to the password
-  return hash.digest("hex");
+  // Méthode statique `hashPassword`
+  User.hashPassword = function (password, salt) {
+    const hash = crypto.createHash("sha256");
+    hash.update(password + salt); // Applique le sel au mot de passe
+    return hash.digest("hex");
+  };
+
+  return User;
 };
 
 module.exports = UserModel;

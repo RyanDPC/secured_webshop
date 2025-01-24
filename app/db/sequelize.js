@@ -23,4 +23,4 @@ let initDb = () => {
 };
 const User = UserModel(sequelize, DataTypes);
 
-module.exports = { sequelize, initDb, User };
+module.exports = { Sequelize, initDb, User, sequelize };

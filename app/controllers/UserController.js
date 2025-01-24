@@ -1,4 +1,5 @@
-const { User } = require("../models/User"); // Assure-toi d'importer le modèle User
+const { Sequelize, User } = require("../db/sequelize");
+const crypto = require("crypto");
 
 // Créer un utilisateur
 exports.create = async (req, res) => {
