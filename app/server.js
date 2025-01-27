@@ -4,9 +4,10 @@ const https = require("https");
 const fs = require("fs");
 const session = require("express-session");
 const expressLayouts = require("express-ejs-layouts");
+const { db } = require("./db/database"); // Importer la connexion à la base de données
+const userRoute = require("./routes/User"); // Importer les routes des utilisateurs
+
 const app = express();
-const { initDb, sequelize } = require("./db/sequelize"); // Importer initDb
-const userRoute = require("./routes/User");
 
 // Options SSL
 const sslOptions = {
@@ -17,14 +18,17 @@ const sslOptions = {
 // Middleware JSON
 app.use(express.json());
 
-// Test de connexion à la base de données
-sequelize
-  .authenticate()
+// Vérification et initialisation de la base de données
+require("./db/database")
+  .initDb()
   .then(() => {
-    console.log("Connexion réussie à la base de données");
+    console.log("Base de données initialisées avec succès.");
   })
   .catch((err) => {
-    console.error("Impossible de se connecter à la base de données:", err);
+    console.error(
+      "Erreur lors de l'initialisation de la base de données:",
+      err
+    );
   });
 
 // Configuration des sessions
@@ -40,10 +44,12 @@ app.use(
     },
   })
 );
+
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   next();
 });
+
 // Configuration des répertoires statiques
 const publicPath = path.resolve(__dirname, "public");
 app.use(express.static(publicPath));
@@ -56,9 +62,11 @@ app.set("views", path.join(__dirname, "resources/views"));
 app.use(expressLayouts);
 app.set("layout", "components/layout");
 app.set("layout extractScripts", true);
+
 // Routes API
 app.use("/api/users", userRoute);
 
+// Routes des pages
 app.get("/", (req, res) =>
   res.render("pages/home", {
     title: "Accueil",
@@ -94,8 +102,8 @@ app.get("/profile", (req, res) => {
   } else {
     res.render("pages/profile", {
       title: "Mon Profil",
-      username: user, // Exemple d'utilisation du nom d'utilisateur
-      email: user, // Exemple d'utilisation de l'email
+      username: user.username, // Exemple d'utilisation du nom d'utilisateur
+      email: user.email, // Exemple d'utilisation de l'email
       cssFile: "profile.css",
     });
   }
@@ -115,13 +123,9 @@ app.post("/logout", (req, res) => {
   });
 });
 
-initDb()
-  .then(() => {
-    // Serveur HTTPS
-    const httpsServer = https.createServer(sslOptions, app);
+// Démarrer le serveur HTTPS
+const httpsServer = https.createServer(sslOptions, app);
 
-    httpsServer.listen(8080, () => {
-      console.log("Serveur HTTPS lancé sur https://localhost:8080");
-    });
-  })
-  .catch((error) => console.error("Erreur de sync:", error));
+httpsServer.listen(8080, () => {
+  console.log("Serveur HTTPS lancé sur https://localhost:8080");
+});

@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = {
         username: formData.get("username"),
         email: formData.get("email"),
-        password_hash: formData.get("password"),
+        password: formData.get("password"),
         confirmPassword: formData.get("confirmPassword"),
       };
 
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify({ data }),
         });
 
         const result = await response.json();

@@ -1,57 +1,54 @@
-const crypto = require("crypto");
-const { DataTypes } = require("sequelize");
+const mysql = require("mysql2");
+const bcrypt = require("bcrypt");
+const { db } = require("../db/database"); // Assurez-vous que vous importez correctement la connexion à la DB
 
-const UserModel = (sequelize) => {
-  const User = sequelize.define(
-    "User", // Nom du modèle
-    {
-      username: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notNull: { msg: "Le nom d'utilisateur est requis" },
-          notEmpty: { msg: "Le nom d'utilisateur ne peut pas être vide" },
-        },
-      },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-          isEmail: { msg: "L'email doit être valide" },
-          notNull: { msg: "L'email est requis" },
-        },
-      },
-      password_hash: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notNull: { msg: "Le mot de passe est requis" },
-        },
-      },
-      salt: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      admin: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-    },
-    {
-      tableName: "users",
-      timestamps: true, // Si tu veux `createdAt` et `updatedAt`
-    }
-  );
+// Classe User qui gère les opérations SQL
+class User {
+  static create({ username, email, password_hash, salt, admin }) {
+    return new Promise((resolve, reject) => {
+      const query =
+        "INSERT INTO users (username, email, password_hash, salt, admin) VALUES (?, ?, ?, ?, ?)";
+      db.query(
+        query,
+        [username, email, password_hash, salt, admin],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        }
+      );
+    });
+  }
 
-  // Méthode statique `hashPassword`
-  User.hashPassword = function (password, salt) {
-    const hash = crypto.createHash("sha256");
-    hash.update(password + salt); // Applique le sel au mot de passe
-    return hash.digest("hex");
-  };
+  static findByUsername(username) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT * FROM users WHERE username = ?";
+      db.query(query, [username], (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows[0]);
+      });
+    });
+  }
 
-  return User;
-};
+  static findById(id) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT * FROM users WHERE id = ?";
+      db.query(query, [id], (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows[0]);
+      });
+    });
+  }
 
-module.exports = UserModel;
+  static searchByUsername(username) {
+    return new Promise((resolve, reject) => {
+      const query =
+        "SELECT id, username, profile_pic FROM users WHERE username LIKE ?";
+      db.query(query, [`${username}%`], (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
+    });
+  }
+}
+
+module.exports = User;
