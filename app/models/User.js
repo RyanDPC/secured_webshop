@@ -8,7 +8,6 @@ const UserModel = (sequelize) => {
       username: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
         validate: {
           notNull: { msg: "Le nom d'utilisateur est requis" },
           notEmpty: { msg: "Le nom d'utilisateur ne peut pas être vide" },

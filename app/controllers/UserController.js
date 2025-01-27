@@ -1,6 +1,6 @@
 const { Sequelize, User } = require("../db/sequelize");
 const crypto = require("crypto");
-
+const { Op } = require("sequelize");
 // Créer un utilisateur
 exports.create = async (req, res) => {
   try {
@@ -112,4 +112,50 @@ exports.showProfile = async (req, res) => {
     console.error(error);
     res.status(500).send("Erreur serveur");
   }
+};
+
+// Recherche d'utilisateurs
+exports.searchUsers = async (req, res) => {
+  const { username } = req.query;
+  console.log("Requête reçue pour la recherche :", username);
+
+  if (!username) {
+    return res
+      .status(400)
+      .json({ message: 'Paramètre "username" requis pour la recherche.' });
+  }
+
+  try {
+    const users = await User.findAll({
+      where: {
+        username: {
+          [Op.like]: `${username}%`,
+        },
+      },
+    });
+
+    if (users.length === 0) {
+      console.log(`Aucun utilisateur trouvé avec le nom : ${username}`);
+      return res.status(404).json({ message: "Aucun utilisateur trouvé." });
+    }
+
+    console.log("Résultat de la recherche :", users);
+    res.json({ users });
+  } catch (err) {
+    console.error("Erreur lors de la recherche des utilisateurs :", err);
+    return res
+      .status(500)
+      .json({ error: "Erreur lors de la recherche des utilisateurs." });
+  }
+};
+
+// Déconnexion de l'utilisateur
+exports.logout = (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Erreur lors de la déconnexion :", err);
+    }
+    res.clearCookie("refreshToken");
+    res.status(200).json({ message: "Déconnexion réussie." });
+  });
 };

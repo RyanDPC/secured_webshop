@@ -1,10 +1,32 @@
 <header>
-    <nav>
-        <ul>
-            <li><a href="/">Accueil</a></li>
-            <li><a href="/profile">Mon Profil</a></li>
-            <li><a href="/login">Se connecter</a></li>
-            <li><a href="/register">Créer un compte</a></li>
-        </ul>
-    </nav>
+  
+
+    <% if (user) {%>
+        <nav>
+            <ul>
+                <li><a href="/">Accueil</a></li>
+                <li><a href="/profile">Mon Profil</a></li>
+                <p><%= user.username %></p>
+                    <button id="logout-btn">Déconnexion</button>
+            </ul>
+        </nav>
+        <section class="users-search-section">
+        <div class="search-users">
+            <input type="text" name="users-search" id="users-search" placeholder="Recherche utilisateurs">
+            <button type="submit" id="search-users-btn">Rechercher</button>
+        </div>
+        <div id="search-results-container">
+            <ul id="search-results"></ul>
+        </div>
+        </section>
+          <% } else { %>
+        <nav>
+            <ul>
+                <li><a href="/">Accueil</a></li>
+                <li><a href="/profile">Mon Profil</a></li>
+                <li><a href="/login">Se connecter</a></li>
+                <li><a href="/register">Créer un compte</a></li>
+            </ul>
+        </nav>
+        <% } %>
 </header>
