@@ -1,62 +1,60 @@
-# Creation date : 18.03.2024
-# Created by : CSR
-# Description : This compose file creates a stack of two containers (nodejs + mysql)
-# 
 version: '2'
 
 services:
-    db:
-        image: mysql:8.0.30
-        container_name: db_container
-        environment:
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_USER: db_user
-            MYSQL_PASSWORD: db_user_pass
-            MYSQL_DATABASE: MiniGamesStore 
-        restart: always
-        ports:
-            - "6033:3306"
-        volumes:
-            - dbdata:/var/lib/mysql
-      
-    phpmyadmin:
-        image: phpmyadmin:5.2.0
-        container_name: pma_container
-        links:
-            - db
-        environment:
-            PMA_HOST: db
-            PMA_PORT: 3306
-            PMA_ARBITRARY: 1
-        restart: always
-        ports:
-            - 8081:80
+  db:
+    image: mysql:8.0.30
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: db_user_pass
+      MYSQL_DATABASE: MiniGamesStore
+    restart: always
+    ports:
+      - "6033:3306"  # Expose le port 3306 du conteneur MySQL vers le port 6033 de l'hôte
+    volumes:
+      - dbdata:/var/lib/mysql  # Volume pour persister les données
+    networks:
+      - app-network  # Attacher le conteneur à un réseau Docker
 
+  phpmyadmin:
+    image: phpmyadmin:5.2.0
+    container_name: pma_container
+    environment:
+      PMA_HOST: db  # Nom du conteneur MySQL pour la connexion
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - "8081:80"  # Expose phpMyAdmin sur le port 8081
+    networks:
+      - app-network  # Attacher phpMyAdmin au même réseau que la DB
 
-    nodejs:
-        build:
-            context: .
-            dockerfile: nodejs.dockerfile
-        user: "node"
-        working_dir: /home/node/app
-        environment:
-            #- NODE_ENV=production
-            - NODE_ENV=development
-        volumes:  
-        - ./app:/home/node/app
-        - ./ssl:/home/node/app/ssl
+  nodejs:
+    build:
+      context: .  # Dossier courant pour le contexte de construction
+      dockerfile: nodejs.dockerfile  # Dockerfile personnalisé pour Node.js
+    container_name: nodejs_container
+    user: "node"
+    working_dir: /home/node/app  # Le répertoire de travail dans le conteneur
+    environment:
+      NODE_ENV: development  # Ou production si nécessaire
+    volumes:
+      - ./app:/home/node/app  # Monter le répertoire local `./app` dans le conteneur
+      - ./ssl:/home/node/app/ssl  # Monter un dossier SSL si nécessaire
+    expose:
+      - "8080"  # Expose le port 8080 à l'intérieur du conteneur
+    ports:
+      - "8080:8080"  # Expose le port 8080 sur l'hôte
+    command: "npm start"  # Démarre l'application avec `npm start`
+    networks:
+      - app-network  # Attacher Node.js au même réseau que MySQL et phpMyAdmin
 
-        expose:
-            - "8080"
-        ports: 
-            - "8080:8080"
-        command: "npm start"
-        #command: "npm run dev"
-
-
-# The database will be persistent among containers restarts.
+# Définition des volumes
 volumes:
-    dbdata:
+  dbdata:  # Volume persistant pour MySQL
 
-
-  
+# Définition du réseau Docker
+networks:
+  app-network:
+    driver: bridge  # Utilisation du réseau bridge pour la communication entre conteneurs

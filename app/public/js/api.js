@@ -19,23 +19,19 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       // Vérification des champs
-      if (
-        !data.username ||
-        !data.email ||
-        !data.password_hash ||
-        !data.confirmPassword
-      ) {
+      if (!data.username || !data.email || !data.password || !data.confirmPassword) {
         alert("Tous les champs doivent être remplis.");
         return;
       }
 
-      if (data.password_hash !== data.confirmPassword) {
+      if (data.password !== data.confirmPassword) {
         alert("Les mots de passe ne correspondent pas.");
         return;
       }
+
       // Envoi des données au serveur pour l'inscription
       try {
-        const response = await fetch("/api/users/signup", {
+        const response = await fetch("/api/users/register", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -68,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const formData = new FormData(loginForm);
       const data = {
         username: formData.get("username"),
-        password_hash: formData.get("password"),
+        password: formData.get("password"),
       };
 
       // Envoi des données au serveur pour la connexion
@@ -78,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ data }),
+          body: JSON.stringify(data),
         });
 
         const result = await response.json();
@@ -87,9 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
           alert("Connexion réussie !");
           window.location.href = "/"; // Redirection vers la page principale
         } else {
-          alert(
-            result.message || "Nom d'utilisateur ou mot de passe incorrect."
-          );
+          alert(result.message || "Nom d'utilisateur ou mot de passe incorrect.");
         }
       } catch (error) {
         console.error("Erreur lors de la connexion :", error);
@@ -97,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
   // Fonction qui sera appelée lorsque l'utilisateur soumet la recherche
   const searchUsers = (event) => {
     event.preventDefault(); // Empêche l'envoi par défaut du formulaire
@@ -203,3 +198,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// Fonction pour effectuer des requêtes authentifiées avec les cookies (pour la déconnexion)
+async function authenticatedFetch(url, options) {
+  const token = localStorage.getItem("accessToken");
+
+  const headers = {
+    ...options.headers,
+    Authorization: `Bearer ${token}`,
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  return response;
+}

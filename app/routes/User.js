@@ -1,18 +1,24 @@
+// routes/UserRoutes.js
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/UserController");
-const auth = require("../middlewares/auth");
+const UserController = require("../controllers/UserController");
 
-// Route pour l'inscription
-router.post("/signup", controller.create);
+// Route pour créer un utilisateur
+router.post("/register", UserController.create);
 
-// Route pour la connexion
-router.post("/login", controller.login);
+// Route pour se connecter
+router.post("/login", UserController.login);
 
-router.get("/search", controller.searchUsers);
+// Route pour éditer un utilisateur
+router.put("/:id", UserController.edit);
 
-router.post("/logout", controller.logout);
+// Route pour supprimer un utilisateur
+router.delete("/:id", UserController.deleteUser);
 
-router.get("/profile", auth.authenticateToken, controller.showProfile);
+// Route pour afficher un utilisateur
+router.get("/:id", UserController.show);
+
+// Route pour rechercher des utilisateurs par nom
+router.get("/search", UserController.search);
 
 module.exports = router;
