@@ -1,4 +1,4 @@
-// routes/pages.js
+// Initialement créé le 19 février 2021
 const express = require("express");
 const router = express.Router();
 

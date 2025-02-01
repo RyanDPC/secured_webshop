@@ -31,6 +31,7 @@ async function initApp() {
           httpOnly: true,
           sameSite: "strict",
         },
+    store: new session.MemoryStore(),
       })
     );
 
@@ -44,6 +45,8 @@ async function initApp() {
     app.use(express.static(publicPath));
     app.use(express.static(path.join(publicPath, "css")));
     app.use(express.static(path.join(publicPath, "js")));
+    app.use(express.static(path.join("./", "middlewares")));
+
 
     // Configuration du moteur de templates EJS
     app.set("view engine", "ejs");

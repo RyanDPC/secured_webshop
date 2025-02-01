@@ -20,9 +20,49 @@ function connectRoot() {
         console.error("Erreur de connexion en tant que root:", err.stack);
         return reject(err);
       }
-      resolve();
+      ensureDatabaseExists()
+      .then(() => ensureUserExists())
+      .then(() => resolve())
+      .catch((err) => reject(err));
     });
   });
 }
+
+// Fonction pour vérifier si la base de données existe et la créer si nécessaire
+function ensureDatabaseExists() {
+  return new Promise((resolve, reject) => {
+    rootConnection.query('CREATE DATABASE IF NOT EXISTS MiniGamesStore', (err, results) => {
+      if (err) {
+        console.error('Erreur lors de la création de la base de données:', err.stack);
+        return reject(err);
+      }
+      resolve(results);
+    });
+  });
+}
+
+// Fonction pour vérifier si l'utilisateur existe, et le créer s'il n'existe pas
+function ensureUserExists() {
+    return new Promise((resolve, reject) => {
+      const user = 'db_user';
+      const password = 'db_user_pass';
+      const createUserQuery = `CREATE USER IF NOT EXISTS '${user}'@'%' IDENTIFIED BY '${password}';`;
+      const grantPrivilegesQuery = `GRANT ALL ON MiniGamesStore.* TO '${user}'@'%' WITH GRANT OPTION;`;
+  
+      rootConnection.query(createUserQuery, (err, results) => {
+        if (err) {
+          console.error('Erreur lors de la création de l\'utilisateur:', err.stack);
+          return reject(err);
+        }
+        rootConnection.query(grantPrivilegesQuery, (err, results) => {
+          if (err) {
+            console.error('Erreur lors de l\'attribution des privilèges:', err.stack);
+            return reject(err);
+          }
+          resolve(results);
+        });
+      });
+    });
+  }
 
 module.exports = { connectRoot, rootConnection };

@@ -20,9 +20,37 @@ function connectDb() {
         console.error("Erreur de connexion à la base de données:", err.stack);
         return reject(err);
       }
-      resolve();
+      createUsersTable()
+      .then(() => resolve())
+      .catch((err) => reject(err));
     });
   });
 }
 
-module.exports = { connectDb, db };
+// Fonction pour créer la table users
+function createUsersTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS users (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      salt VARCHAR(255) NOT NULL,
+      admin BOOLEAN DEFAULT FALSE,
+      profile_pic VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+  `;
+  return new Promise((resolve, reject) => {
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Erreur lors de la création de la table users:", err.stack);
+        return reject(err);
+      }
+      resolve(results);
+    });
+  });
+}
+
+module.exports = { connectDb, createUsersTable, db };
