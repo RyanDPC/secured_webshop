@@ -36,8 +36,8 @@ const login = async (req, res) => {
     }
 
     // Générer les tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    const accessToken = generateAccessToken(req.body.user);
+    const refreshToken = generateRefreshToken(req.body.user);
 
     res.cookie("accessToken", accessToken, { 
       httpOnly: true, 

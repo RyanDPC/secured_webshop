@@ -4,7 +4,7 @@ const {rootConnection} = require("../db/data"); // Connexion root
 class User {
   // Créer un nouvel utilisateur
   static async create({ username, email, password_hash, salt, admin }) {
-    const query = `INSERT INTO users (username, email, password, salt, admin) 
+    const query = `INSERT INTO users (username, email, password, admin) 
                    VALUES (?, ?, ?, ?, ?)`;
     return new Promise((resolve, reject) => {
       db.query(query, [username, email, password_hash, salt, admin], (err, result) => {
@@ -49,7 +49,7 @@ class User {
 
   // Mettre à jour les informations d'un utilisateur
   static async update(id, { username, email, password_hash, salt, admin }) {
-    const query = `UPDATE users SET username = ?, email = ?, password = ?, salt = ?, admin = ? 
+    const query = `UPDATE users SET username = ?, email = ?, password = ?, admin = ? 
                    WHERE id = ?`;
     return new Promise((resolve, reject) => {
       db.query(query, [username, email, password_hash, salt, admin, id], (err, result) => {

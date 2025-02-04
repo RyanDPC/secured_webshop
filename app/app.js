@@ -1,6 +1,7 @@
 // app.js
 const express = require("express");
 const path = require("path");
+const CookieParser = require("cookie-parser");
 const session = require("express-session");
 const expressLayouts = require("express-ejs-layouts");
 const { connectDb } = require("./db/database"); // Importer la connexion à la base de données
@@ -12,7 +13,7 @@ const app = express();
 
 // Middleware JSON
 app.use(express.json());
-
+app.use(CookieParser())
 // Vérification et initialisation de la base de données
 async function initApp() {
   try {

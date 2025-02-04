@@ -1,7 +1,7 @@
 // Fonction pour effectuer une requête POST
 export const postData = async (url, data) => {
   try {
-    const response = await fetch(url, {
+    const response = await fetch(url, token, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,6 +30,7 @@ export const fetchData = async (url) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getToken()}`, // Utilisation du token si l'utilisateur est authentifié
       },
+      credentials: 'include', 
     });
 
     if (!response.ok) {
@@ -46,17 +47,21 @@ export const fetchData = async (url) => {
 
 // Fonction pour sauvegarder un token dans le localStorage
 export const setToken = (token) => {
-  localStorage.setItem('accessToken', token);
+  document.cookie = `accessToken=${token}; path=/; secure; HttpOnly; SameSite=Strict`;
 };
+
 
 // Fonction pour récupérer un token depuis le localStorage
 export const getToken = () => {
-  return localStorage.getItem('accessToken');
+  const cookies = document.cookie.split('; ');
+  const tokenCookie = cookies.find(row => row.startsWith('accessToken='));
+  return tokenCookie ? tokenCookie.split('=')[1] : null;
 };
+
 
 // Fonction pour supprimer un token du localStorage
 export const removeToken = () => {
-  localStorage.removeItem('accessToken');
+  document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
 };
 
 // Fonction pour vérifier si un utilisateur est authentifié
