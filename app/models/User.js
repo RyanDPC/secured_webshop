@@ -1,16 +1,20 @@
 // models/User.js
 const { db } = require("../db/database"); // Connexion db_user
-const {rootConnection} = require("../db/data"); // Connexion root
+const { rootConnection } = require("../db/data"); // Connexion root
 class User {
   // Créer un nouvel utilisateur
-  static async create({ username, email, password_hash, salt, admin }) {
-    const query = `INSERT INTO users (username, email, password, admin) 
-                   VALUES (?, ?, ?, ?, ?)`;
+  static async create({ username, email, password_hash, admin }) {
+    const query = `INSERT INTO users (username, email, password_hash, admin) 
+                   VALUES (?, ?, ?, ?)`;
     return new Promise((resolve, reject) => {
-      db.query(query, [username, email, password_hash, salt, admin], (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
-      });
+      db.query(
+        query,
+        [username, email, password_hash, admin],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        }
+      );
     });
   }
 
@@ -48,14 +52,18 @@ class User {
   }
 
   // Mettre à jour les informations d'un utilisateur
-  static async update(id, { username, email, password_hash, salt, admin }) {
-    const query = `UPDATE users SET username = ?, email = ?, password = ?, admin = ? 
+  static async update(id, { username, email, password_hash, admin }) {
+    const query = `UPDATE users SET username = ?, email = ?, password_hash = ?, admin = ? 
                    WHERE id = ?`;
     return new Promise((resolve, reject) => {
-      db.query(query, [username, email, password_hash, salt, admin, id], (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
-      });
+      db.query(
+        query,
+        [username, email, password_hash, admin, id],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        }
+      );
     });
   }
 
