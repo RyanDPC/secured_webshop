@@ -2,23 +2,18 @@
 const express = require("express");
 const router = express.Router();
 const UserController = require("../controllers/UserController");
+const { authenticateToken } = require("../middlewares/auth");
 
 // Route pour créer un utilisateur
-router.post("/register", UserController.create);
+router.post("/register", UserController.register);
 
 // Route pour se connecter
-router.post("/login", UserController.login);
+router.post("/login",UserController.login);
 
-// Route pour éditer un utilisateur
-router.put("/:id", UserController.edit);
+// // Route pour éditer un utilisateur
+router.put("/:id", UserController.rechercheUser);
 
-// Route pour supprimer un utilisateur
-router.delete("/:id", UserController.deleteUser);
-
-// Route pour afficher un utilisateur
-router.get("/:id", UserController.show);
-
-// Route pour rechercher des utilisateurs par nom
-router.get("/search", UserController.search);
+//Route pour se déconnecter
+router.post("/logout", UserController.logout);
 
 module.exports = router;

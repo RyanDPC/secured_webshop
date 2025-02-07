@@ -1,14 +1,15 @@
 // Initialement créé le 19 février 2021
 const express = require("express");
 const router = express.Router();
+const { authenticateToken, checkToken } = require("../middlewares/auth");
 
 // Route pour la page d'accueil
-router.get("/", (req, res) => {
+router.get("/", checkToken, (req, res) => {
   res.render("pages/home", {
     title: "Accueil",
     layout: "components/layout",
     cssFile: "home.css",
-    user: req.session.user || null, // Utilisation correcte de req.session.user
+    user: req.user || null,
   });
 });
 
@@ -23,7 +24,7 @@ router.get("/register", (_, res) => {
 
 // Route pour la page de connexion
 router.get("/login", (req, res) => {
-  if (req.session.user) {
+  if (req.user) {
     return res.redirect("/");
   }
   res.render("pages/login", {
@@ -34,18 +35,22 @@ router.get("/login", (req, res) => {
 });
 
 // Route pour la page de profil
-router.get("/profile", (req, res) => {
-  const user = req.session.user || null; // Utilisation correcte de req.session.user
-  if (!user) {
-    return res.redirect("/login");
-  } else {
-    res.render("pages/profile", {
-      title: "Mon Profil",
-      username: user.username, // Exemple d'utilisation du nom d'utilisateur
-      email: user.email, // Exemple d'utilisation de l'email
-      cssFile: "profile.css",
-    });
-  }
+router.get("/profile", authenticateToken, (req, res) => {
+  res.render("pages/profile", {
+    title: "Mon Profil",
+    username: req.user.username,
+    email: req.user.email,
+    cssFile: "profile.css",
+  });
+});
+router.get("/admin", authenticateToken, (req, res) => {
+  res.render("pages/admin", {
+    title: "Administrateur Profil",
+    username: req.user.username,
+    email: req.user.email,
+    admin: req.user.admin,
+    cssFile: "profile.css",
+  });
 });
 
 module.exports = router;

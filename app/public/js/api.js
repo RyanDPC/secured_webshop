@@ -5,12 +5,14 @@ export const postData = async (url, data) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`, // Utilisation du token si l'utilisateur est authentifié
       },
+      credentials: "include",
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      throw new Error("Erreur lors de la requête");
+      throw new Error("Erreur lors de la requête POST");
     }
 
     const result = await response.json();
@@ -45,22 +47,32 @@ export const fetchData = async (url) => {
   }
 };
 
-// Fonction pour sauvegarder un token dans le localStorage
+// Fonction pour sauvegarder un token
 export const setToken = (token) => {
-  document.cookie = `accessToken=${token}; path=/; secure; SameSite=Strict`;
+    document.cookie = `Token=${token}; path=/; secure; SameSite=Strict`;
+    localStorage.setItem('Token', token);
+
 };
 
-// Fonction pour récupérer un token depuis le localStorage
+// Fonction pour récupérer un token
 export const getToken = () => {
-  const cookies = document.cookie.split("; ");
-  const tokenCookie = cookies.find((row) => row.startsWith("accessToken="));
-  return tokenCookie ? tokenCookie.split("=")[1] : null;
+  if (typeof document !== 'undefined') {
+    const cookies = document.cookie.split("; ");
+    const tokenCookie = cookies.find((row) => row.startsWith("accessToken="));
+    return tokenCookie ? tokenCookie.split("=")[1] : null;
+  } else if (typeof localStorage !== 'undefined') {
+    return localStorage.getItem('Token');
+  }
+  return null;
 };
 
-// Fonction pour supprimer un token du localStorage
+// Fonction pour supprimer un token
 export const removeToken = () => {
-  document.cookie =
-    "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+  if (typeof document !== 'undefined') {
+    document.cookie = "Token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; SameSite=Strict";
+  } else if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('Token');
+  }
 };
 
 // Fonction pour vérifier si un utilisateur est authentifié

@@ -1,4 +1,3 @@
-import { response } from "express";
 import { postData, setToken, removeToken, fetchData } from "./api.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -12,22 +11,25 @@ document.addEventListener("DOMContentLoaded", () => {
         username: loginForm.username.value,
         password: loginForm.password.value,
       };
-      console.log(data);
-      try {
-        const response = await postData("/api/users/login", data);
 
-        if (response.token) {
-          setToken(response.token); // Sauvegarder le token dans le localStorage
-          alert("Connexion réussie!");
-          window.location.href = "/"; // Rediriger vers la page d'accueil
-        } else {
-          alert(
-            response.message || "Nom d'utilisateur ou mot de passe incorrect."
-          );
+      if (!data.username || !data.password) {
+        return alert("Tous les champs doivent être remplis.");
+      }
+
+      try {
+        console.log("Données de connexion :", data);
+        const result = await postData("/api/users/login", data);
+        console.log("Réponse de l'API :", result);
+
+        if (result.message) {
+          alert(result.message);
+          if (result.message === "Connexion réussie") {
+            window.location.href = "/"; // Rediriger vers le tableau de bord après la connexion
+          }
         }
       } catch (error) {
-        console.error("Erreur lors de la connexion :", error);
-        alert("Erreur de connexion.");
+        console.error("Erreur lors de la connexion:", error);
+        alert("Une erreur s'est produite lors de la connexion.");
       }
     });
   }
@@ -59,17 +61,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        const response = await postData("/api/users/register", data);
+        console.log("Données d'inscription :", data);
+        const result = await postData("/api/users/register", data);
+        console.log("Réponse de l'API :", result);
 
-        if (response.message) {
-          alert(response.message);
-          if (response.message === "Utilisateur créé avec succès") {
+        if (result.message) {
+          alert(result.message);
+          if (result.message === "Utilisateur créé avec succès") {
             window.location.href = "/login"; // Rediriger vers la page de connexion après l'inscription
           }
         }
       } catch (error) {
-        console.error("Erreur lors de l'inscription :", error);
-        alert("Impossible de s'inscrire. Veuillez réessayer.");
+        console.error("Erreur lors de l'inscription:", error);
+        alert("Une erreur s'est produite lors de l'inscription.");
       }
     });
   }

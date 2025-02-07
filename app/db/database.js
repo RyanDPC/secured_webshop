@@ -35,6 +35,7 @@ function createUsersTable() {
       username VARCHAR(255) NOT NULL,
       email VARCHAR(255) NOT NULL,
       password_hash VARCHAR(255) NOT NULL,
+      salt VARCHAR(255) NOT NULL,
       admin BOOLEAN DEFAULT FALSE,
       profile_pic VARCHAR(255),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

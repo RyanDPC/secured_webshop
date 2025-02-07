@@ -1,0 +1,14 @@
+<% if (admin) { %>
+    <p>Rôle : <strong>Administrateur</strong></p>
+    <a href="/admin-dashboard" class="btn">Tableau de bord administrateur</a>
+<% } else { %>
+    <p>Rôle : <strong>Utilisateur</strong></p>
+<% } %>
+
+<form action="/api/users/logout" method="post">
+    <div class="buttons">
+        <a href="/edit-profile" class="btn">Modifier le profil</a>
+        <button type="submit" class="btn">Se déconnecter</button>
+    </div>
+</form>
+</div>

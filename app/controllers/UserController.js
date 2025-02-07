@@ -1,158 +1,153 @@
 const dotenv = require("dotenv");
 dotenv.config();
-const User = require("../models/User");
 const bcrypt = require("bcrypt");
-const {
-  generateAccessToken,
-  generateRefreshToken,
-} = require("../middlewares/auth");
+const { generateAccessToken, generateRefreshToken } = require("../middlewares/auth");
+const User = require("../models/User"); // Corrected import statement
 
-// Créer un nouvel utilisateur
-const create = async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
+class UserController {
+  static async register(req, res) {
+    try {
+      const { username, email, password } = req.body;
+      console.log("Registering user with data:", { username, email });
 
-    // Hacher le mot de passe
-    const password_hash = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+      const salt = bcrypt.genSaltSync(10);
+      const password_hash = bcrypt.hashSync(password, salt);
 
-    // Créer un utilisateur
-    const user = await User.create({
-      username,
-      email,
-      password_hash,
-      admin: false,
-      profile_pic: "",
-    });
+      const user = await User.create({
+        username,
+        email,
+        password_hash,
+        salt,
+        admin: false,
+        profile_pic: "",
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
 
-    res
-      .status(201)
-      .json({ message: "Utilisateur créé avec succès", userId: user.id });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Erreur lors de la création de l'utilisateur", error });
-  }
-};
+      console.log("User registered successfully:", user);
 
-// Connexion d'un utilisateur
-const login = async (req, res) => {
-  try {
-    const { username, password } = req.body;
+      const accessToken = generateAccessToken(user);
+      const refreshToken = generateRefreshToken(user);
 
-    // Trouver l'utilisateur par son nom d'utilisateur
-    const user = await User.findByUsername(username);
-    if (!user)
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
-
-    // Vérifier le mot de passe
-    if (!bcrypt.compareSync(password, user.password)) {
-      return res.status(401).json({ message: "Mot de passe incorrect" });
+      res.status(201).json({
+        message: "Utilisateur créé avec succès",
+        userId: user.id,
+        accessToken,
+        refreshToken,
+      });
+    } catch (error) {
+      console.error("Error registering user:", error);
+      res.status(500).json({
+        message: "Erreur lors de la création de l'utilisateur",
+        error,
+      });
     }
-
-    // Générer les tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 3600000,
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 604800000,
-    });
-    // Réponse avec les tokens
-    console.log(`User ${user.username} logged in successfully`);
-    console.log(`Access Token: ${accessToken}`);
-    console.log(`Refresh Token: ${refreshToken}`);
-    res.status(200).json({
-      message: "Connexion réussie",
-      accessToken,
-      refreshToken,
-    });
-  } catch (error) {
-    res.status(400).json({ message: "Erreur de connexion", error });
   }
-};
 
-// Modifier un utilisateur
-const edit = async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const { username, email, password, admin } = req.body;
+  static async login(req, res) {
+    try {
+      const { username, password } = req.body;
+      console.log("Logging in user with username:", username);
 
-    // Trouver l'utilisateur
-    const user = await User.findById(userId);
-    if (!user)
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+      const user = await User.findByUsername(username);
 
-    // Si le mot de passe est fourni, on le hache
-    const password_hash = password
-      ? bcrypt.hashSync(password, bcrypt.genSaltSync(10))
-      : user.password;
+      if (!user) {
+        console.log("User not found:", username);
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
 
-    await User.update(userId, { username, email, password_hash, admin });
+      const isMatch = bcrypt.compareSync(password, user.password_hash);
 
-    res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
-  } catch (error) {
-    res.status(500).json({
-      message: "Erreur lors de la mise à jour de l'utilisateur",
-      error,
-    });
+      if (!isMatch) {
+        console.log("Incorrect password for user:", username);
+        return res.status(401).json({ message: "Mot de passe incorrect" });
+      }
+
+      const accessToken = generateAccessToken(user);
+      const refreshToken = generateRefreshToken(user);
+
+      console.log("User logged in successfully:", username);
+
+      // Set the token in cookies with an expiration time of 1 hour
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 3600000, // 1 hour in milliseconds
+      });
+
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 3600000, // 1 hour in milliseconds
+      });
+
+      res.status(200).json({
+        message: "Connexion réussie",
+        accessToken,
+        refreshToken,
+      });
+    } catch (error) {
+      console.error("Error logging in user:", error);
+      res.status(500).json({
+        message: "Erreur lors de la connexion",
+        error,
+      });
+    }
   }
-};
+static async logout(req, res) {
+    try {
+        console.log("Logging out user:", req.user);
 
-// Supprimer un utilisateur
-const deleteUser = async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const result = await User.delete(userId);
-    if (!result)
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+        // Clear the token from cookies
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
 
-    res.status(200).json({ message: "Utilisateur supprimé avec succès" });
-  } catch (error) {
-    res.status(500).json({
-      message: "Erreur lors de la suppression de l'utilisateur",
-      error,
-    });
+        // Destroy the session
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("Error destroying session:", err);
+                return res.status(500).json({ message: "Erreur lors de la déconnexion" });
+            }
+
+            // Redirect to home page after successful logout
+            res.redirect("/");
+        });
+    } catch (error) {
+        console.error("Error logging out user:", error);
+        res.status(500).json({
+            message: "Erreur lors de la déconnexion",
+            error,
+        });
+    }
+}
+  static async rechercheUser(req, res) {
+    try {
+      const { username } = req.params;
+      console.log("Searching for user with username:", username);
+
+      const user = await User.findByUsername(username);
+
+      if (!user) {
+        console.log("User not found:", username);
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+
+      console.log("User found:", user);
+
+      res.status(200).json({
+        message: "Utilisateur trouvé",
+        user,
+      });
+    } catch (error) {
+      console.error("Error searching for user:", error);
+      res.status(500).json({
+        message: "Erreur lors de la recherche de l'utilisateur",
+        error,
+      });
+    }
   }
-};
+}
 
-// Afficher un utilisateur
-const show = async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const user = await User.show(userId);
-    if (!user)
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
-
-    // Masquer le mot de passe
-    const userData = { ...user, password_hash: "*****" };
-
-    res.status(200).json(userData);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Erreur lors de l'affichage de l'utilisateur", error });
-  }
-};
-
-// Recherche par nom d'utilisateur
-const search = async (req, res) => {
-  try {
-    const { username } = req.query;
-    const users = await User.searchByUsername(username);
-    res.status(200).json(users);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Erreur lors de la recherche des utilisateurs", error });
-  }
-};
-
-module.exports = { create, login, edit, deleteUser, show, search };
+module.exports = UserController;

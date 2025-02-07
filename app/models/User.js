@@ -3,13 +3,13 @@ const { db } = require("../db/database"); // Connexion db_user
 const { rootConnection } = require("../db/data"); // Connexion root
 class User {
   // Créer un nouvel utilisateur
-  static async create({ username, email, password_hash, admin }) {
-    const query = `INSERT INTO users (username, email, password_hash, admin) 
-                   VALUES (?, ?, ?, ?)`;
+  static async create({ username, email, password_hash, salt, admin }) {
+    const query = `INSERT INTO users (username, email, password_hash,salt, admin) 
+                   VALUES (?, ?, ?, ?, ?)`;
     return new Promise((resolve, reject) => {
       db.query(
         query,
-        [username, email, password_hash, admin],
+        [username, email, password_hash, salt, admin],
         (err, result) => {
           if (err) return reject(err);
           resolve(result);

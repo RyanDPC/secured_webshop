@@ -8,12 +8,13 @@ const { connectDb } = require("./db/database"); // Importer la connexion à la b
 const { connectRoot } = require("./db/data"); // Importer la connexion à la base de données
 const userRoute = require("./routes/User"); // Importer les routes des utilisateurs
 const pagesRoute = require("./routes/Pages"); // Importer les routes des pages
-
+const { authenticateToken } = require("./middlewares/auth");
 const app = express();
 
 // Middleware JSON
 app.use(express.json());
-app.use(CookieParser())
+app.use(CookieParser());
+
 // Vérification et initialisation de la base de données
 async function initApp() {
   try {
@@ -61,24 +62,9 @@ async function initApp() {
 
     // Routes des pages
     app.use("/", pagesRoute); // Utilisation des routes des pages
-
-    // Route pour déconnexion
-    app.post("/logout", (req, res) => {
-      req.session.destroy((err) => {
-        if (err) {
-          console.error("Erreur lors de la déconnexion :", err);
-          return res
-            .status(500)
-            .json({ message: "Erreur lors de la déconnexion." });
-        }
-        res.clearCookie("refreshToken");
-        res.status(200).json({ message: "Déconnexion réussie." });
-      });
-    });
-  } catch (err) {
-    console.error("Erreur lors de l'initialisation de l'application:", err);
-  }
-}
+  } catch (error) {
+    console.error("Erreur lors de l'initialisation de l'application:", error);
+  }}
 
 initApp();
 

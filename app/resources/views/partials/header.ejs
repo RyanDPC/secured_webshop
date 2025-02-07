@@ -1,13 +1,12 @@
 <header>
-  
-
     <% if (user) {%>
         <nav>
             <ul>
                 <li><a href="/">Accueil</a></li>
-                <li><a href="/profile">Mon Profil</a></li>
-                <p><%= user.username %></p>
-                    <button id="logout-btn">Déconnexion</button>
+                <li><a href="/profile">Mon Profile</a></li>
+                <form action="/api/users/logout" method="post">
+                    <button type="submit" class="btn">Se déconnecter</button>
+                </form>
             </ul>
         </nav>
         <section class="users-search-section">
