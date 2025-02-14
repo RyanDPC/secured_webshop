@@ -3,32 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title><%= title %> - Mini Games Store</title>
-     <!-- Lien vers le CSS spécifique à la page -->
-     <% if (cssFile) { %>
+    <meta name="description" content="Services informatiques professionnels">
+    <title><%= title %> - TechSolutions Pro</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <% if (cssFile) { %>
         <link rel="stylesheet" href="/<%= cssFile %>">
-        <link rel="stylesheet" href="/home.css">
-    <% } else { %>
-        <link rel="stylesheet" href="/styles.css"> <!-- Le style global -->
-    <% } %> <!-- Le style global -->
+        <link rel="stylesheet" href="/style.css">
+    <% } %>
+    <link rel="stylesheet" href="/style.css">
     <link rel="icon" href="favicon.ico">
 </head>
 <body>
+    <header class="main-header">
+        <%- include('../partials/header') %>
+    </header>
 
-    
-        <%- include('../partials/header') %><!-- Contenu dynamique du header -->
-
-
-    <main>
-        <%- body %> <!-- Le contenu spécifique de chaque page -->
+    <main class="main-content">
+        <%- body %>
     </main>
 
- 
-        <%- include('../partials/footer') %> <!-- Contenu dynamique du footer -->
-   
-    <script type="module"src="/api.js"></script> <!-- Script commun -->
-    <script type="module"src="/pages.js"></script> <!-- Script commun -->
-    <%- script %> <!-- Inclut les scripts supplémentaires, le cas échéant -->
+    <footer class="main-footer">
+        <%- include('../partials/footer') %>
+    </footer>
+
+    <script type="module" src="/js/api.js"></script>
+    <script type="module" src="/js/pages.js"></script>
+    <%- script %>
 </body>
 </html>

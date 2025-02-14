@@ -1,14 +1,38 @@
-<% if (admin) { %>
-    <p>Rôle : <strong>Administrateur</strong></p>
-    <a href="/admin-dashboard" class="btn">Tableau de bord administrateur</a>
-<% } else { %>
-    <p>Rôle : <strong>Utilisateur</strong></p>
-<% } %>
-
-<form action="/api/users/logout" method="post">
-    <div class="buttons">
-        <a href="/edit-profile" class="btn">Modifier le profil</a>
-        <button type="submit" class="btn">Se déconnecter</button>
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>Administration</h1>
     </div>
-</form>
+    <% if (user.admin) { %>
+        <p>Rôle : <strong>Administrateur</strong></p>
+        
+        <!-- Section pour gérer les utilisateurs -->
+        <div class="admin-section">
+            <h2>Gestion des utilisateurs</h2>
+            <a href="/admin/users" class="btn btn-primary">Voir tous les utilisateurs</a>
+            <a href="/admin/users/create" class="btn btn-secondary">Créer un nouvel utilisateur</a>
+        </div>
+
+        <!-- Section pour gérer les paramètres -->
+        <div class="admin-section">
+            <h2>Paramètres</h2>
+            <a href="/admin/settings" class="btn btn-primary">Voir les paramètres</a>
+            <a href="/admin/settings/edit" class="btn btn-secondary">Modifier les paramètres</a>
+        </div>
+
+        <!-- Section pour gérer les rapports -->
+        <div class="admin-section">
+            <h2>Rapports</h2>
+            <a href="/admin/reports" class="btn btn-primary">Voir les rapports</a>
+            <a href="/admin/reports/generate" class="btn btn-secondary">Générer un rapport</a>
+        </div>
+
+    <% } else { %>
+        <p>Rôle : <strong>Utilisateur</strong></p>
+    <% } %>
+
+    <form action="/api/users/logout" method="post">
+        <div class="buttons">
+            <button type="submit" class="btn btn-secondary">Se déconnecter</button>
+        </div>
+    </form>
 </div>

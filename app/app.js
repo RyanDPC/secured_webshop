@@ -18,8 +18,8 @@ app.use(CookieParser());
 // Vérification et initialisation de la base de données
 async function initApp() {
   try {
-    await connectDb(); // Attendre que la base de données soit initialisée
-    await connectRoot(); // Attendre que la connexion en tant que root soit établie
+    await connectRoot(); // Attendre que la base de données soit initialisée
+    await connectDb(); // Attendre que la connexion en tant que root soit établie
     console.log("Base de données initialisée avec succès.");
 
     // Configuration des sessions après l'initialisation de la DB

@@ -1,35 +1,46 @@
-import { postData, setToken, removeToken, fetchData } from "./api.js";
+import { postData, removeToken, fetchData } from "./api.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // Gérer le formulaire de connexion
   const loginForm = document.getElementById("login-form");
   if (loginForm) {
     loginForm.addEventListener("submit", async (event) => {
-      event.preventDefault(); // Empêcher la soumission classique du formulaire
-
-      const data = {
-        username: loginForm.username.value,
-        password: loginForm.password.value,
-      };
-
-      if (!data.username || !data.password) {
-        return alert("Tous les champs doivent être remplis.");
-      }
+      event.preventDefault();
+      
+      // Remove any existing alerts
+      const existingAlerts = loginForm.querySelectorAll('.alert');
+      existingAlerts.forEach(alert => alert.remove());
 
       try {
-        console.log("Données de connexion :", data);
-        const result = await postData("/api/users/login", data);
-        console.log("Réponse de l'API :", result);
+        const response = await fetch("/api/users/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username: loginForm.username.value,
+            password: loginForm.password.value
+          })
+        });
 
-        if (result.message) {
-          alert(result.message);
-          if (result.message === "Connexion réussie") {
-            window.location.href = "/"; // Rediriger vers le tableau de bord après la connexion
-          }
+        const data = await response.json();
+
+        // Create alert element
+        const alert = document.createElement('div');
+        alert.className = `alert ${data.success ? 'alert-success' : 'alert-error'}`;
+        alert.textContent = data.message;
+        loginForm.insertBefore(alert, loginForm.firstChild);
+
+        if (data.success) {
+          setTimeout(() => {
+            window.location.href = "/profile";
+          }, 1000);
         }
       } catch (error) {
-        console.error("Erreur lors de la connexion:", error);
-        alert("Une erreur s'est produite lors de la connexion.");
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-error';
+        alert.textContent = "Une erreur est survenue lors de la connexion";
+        loginForm.insertBefore(alert, loginForm.firstChild);
       }
     });
   }
@@ -38,7 +49,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   if (signupForm) {
     signupForm.addEventListener("submit", async (event) => {
-      event.preventDefault(); // Empêcher la soumission classique du formulaire
+      event.preventDefault();
+
+      // Remove any existing error messages
+      const existingError = signupForm.querySelector('.alert-error');
+      if (existingError) existingError.remove();
 
       const data = {
         username: signupForm.username.value,
@@ -47,33 +62,32 @@ document.addEventListener("DOMContentLoaded", () => {
         confirmPassword: signupForm.confirmPassword.value,
       };
 
-      if (
-        !data.username ||
-        !data.email ||
-        !data.password ||
-        !data.confirmPassword
-      ) {
-        return alert("Tous les champs doivent être remplis.");
-      }
-
-      if (data.password !== data.confirmPassword) {
-        return alert("Les mots de passe ne correspondent pas.");
-      }
-
       try {
-        console.log("Données d'inscription :", data);
         const result = await postData("/api/users/register", data);
-        console.log("Réponse de l'API :", result);
-
-        if (result.message) {
-          alert(result.message);
-          if (result.message === "Utilisateur créé avec succès") {
-            window.location.href = "/login"; // Rediriger vers la page de connexion après l'inscription
-          }
+        
+        if (!result.success) {
+          // Create and display error message
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'alert alert-error';
+          errorDiv.textContent = result.message;
+          signupForm.insertBefore(errorDiv, signupForm.firstChild);
+        } else {
+          // Create and display success message
+          const successDiv = document.createElement('div');
+          successDiv.className = 'alert alert-success';
+          successDiv.textContent = result.message;
+          signupForm.insertBefore(successDiv, signupForm.firstChild);
+          
+          // Redirect after successful registration
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 2000);
         }
       } catch (error) {
-        console.error("Erreur lors de l'inscription:", error);
-        alert("Une erreur s'est produite lors de l'inscription.");
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-error';
+        errorDiv.textContent = "Une erreur est survenue lors de l'inscription";
+        signupForm.insertBefore(errorDiv, signupForm.firstChild);
       }
     });
   }
@@ -110,5 +124,9 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Erreur lors de la recherche.");
       }
     });
+  }
+  const errorMessage = document.getElementById("error-message");
+  if (errorMessage && errorMessage.dataset.error) {
+      alert(errorMessage.dataset.error);
   }
 });

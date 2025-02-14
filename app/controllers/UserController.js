@@ -8,7 +8,31 @@ class UserController {
   static async register(req, res) {
     try {
       const { username, email, password } = req.body;
-      console.log("Registering user with data:", { username, email });
+
+      if (!username || !email || !password) {
+        return res.status(400).json({
+          success: false,
+          message: "Veuillez remplir tous les champs"
+        });
+      }
+
+      // Validation email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: "Format d'email invalide"
+        });
+      }
+
+      // Vérification si l'utilisateur existe déjà
+      const existingUser = await User.findByUsername(username);
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: "Ce nom d'utilisateur est déjà pris"
+        });
+      }
 
       const salt = bcrypt.genSaltSync(10);
       const password_hash = bcrypt.hashSync(password, salt);
@@ -24,22 +48,20 @@ class UserController {
         updated_at: new Date(),
       });
 
-      console.log("User registered successfully:", user);
-
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
 
       res.status(201).json({
-        message: "Utilisateur créé avec succès",
+        success: true,
+        message: "Compte créé avec succès",
         userId: user.id,
         accessToken,
-        refreshToken,
+        refreshToken
       });
     } catch (error) {
-      console.error("Error registering user:", error);
       res.status(500).json({
-        message: "Erreur lors de la création de l'utilisateur",
-        error,
+        success: false,
+        message: "Une erreur est survenue lors de la création du compte"
       });
     }
   }
@@ -47,28 +69,35 @@ class UserController {
   static async login(req, res) {
     try {
       const { username, password } = req.body;
-      console.log("Logging in user with username:", username);
+
+      if (!username || !password) {
+        return res.status(400).json({
+          success: false,
+          message: "Veuillez remplir tous les champs"
+        });
+      }
 
       const user = await User.findByUsername(username);
 
       if (!user) {
-        console.log("User not found:", username);
-        return res.status(404).json({ message: "Utilisateur non trouvé" });
+        return res.status(401).json({
+          success: false,
+          message: "Identifiants introuvables ou incorrects"
+        });
       }
 
       const isMatch = bcrypt.compareSync(password, user.password_hash);
 
       if (!isMatch) {
-        console.log("Incorrect password for user:", username);
-        return res.status(401).json({ message: "Mot de passe incorrect" });
+        return res.status(401).json({
+          success: false,
+          message: "Mot de passe incorrects"
+        });
       }
 
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
 
-      console.log("User logged in successfully:", username);
-
-      // Set the token in cookies with an expiration time of 1 hour
       res.cookie('accessToken', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -84,15 +113,15 @@ class UserController {
       });
 
       res.status(200).json({
+        success: true,
         message: "Connexion réussie",
         accessToken,
-        refreshToken,
+        refreshToken
       });
     } catch (error) {
-      console.error("Error logging in user:", error);
       res.status(500).json({
-        message: "Erreur lors de la connexion",
-        error,
+        success: false,
+        message: "Une erreur est survenue lors de la connexion"
       });
     }
   }

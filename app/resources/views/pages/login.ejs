@@ -15,4 +15,7 @@
         </div>
     </form>
     <p class="register-link">Pas encore de compte ? <a href="/register">Créer un compte</a></p>
-</div>
+</div> 
+<% if (error) { %>
+    <div id="error-message" data-error="<%= error %>" hidden></div>
+<% } %>

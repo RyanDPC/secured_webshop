@@ -13,8 +13,9 @@ if (!process.env.JWT_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
 
 // Générer un token d'accès (valable pour 1 heure)
 exports.generateAccessToken = (user) => {
+    const {password, salt, ...User} = user;
     return jwt.sign(
-        { id: user.id, username: user.username, email: user.email, admin: user.admin},
+        User,
         process.env.JWT_SECRET,
         { expiresIn: "1h" }
     );
@@ -22,8 +23,10 @@ exports.generateAccessToken = (user) => {
 
 // Générer un token de rafraîchissement (valable pour 7 jours)
 exports.generateRefreshToken = (user) => {
+    const {password, salt, ...User} = user;
+
     return jwt.sign(
-        { id: user.id, username: user.username, email: user.email,admin: user.admin },
+        User,
         process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: "7d" }
     );
@@ -49,12 +52,12 @@ exports.checkToken = (req, res, next) => {
 exports.authenticateToken = (req, res, next) => {
     const token = req.cookies.accessToken;
     if (!token) {
-        return res.status(401).json({ message: "Token manquant" });
+        return res.redirect("/login?error=Vous devez être connecté pour accéder à cette page.");
     }
 
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(401).json({ message: "Token invalide" });
+            return res.redirect("/login?error=Session expirée, veuillez vous reconnecter.");
         }
         req.user = decoded;
         next();

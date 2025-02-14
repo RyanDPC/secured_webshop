@@ -1,31 +1,28 @@
-<header>
-    <% if (user) {%>
-        <nav>
-            <ul>
-                <li><a href="/">Accueil</a></li>
-                <li><a href="/profile">Mon Profile</a></li>
-                <form action="/api/users/logout" method="post">
-                    <button type="submit" class="btn">Se déconnecter</button>
-                </form>
-            </ul>
-        </nav>
-        <section class="users-search-section">
-        <div class="search-users">
-            <input type="text" name="users-search" id="users-search" placeholder="Recherche utilisateurs">
-            <button type="submit" id="search-users-btn">Rechercher</button>
+
+<header class="main-header">
+    <div class="container">
+      <nav class="nav-container">
+        <div class="logo">
+          <a href="/">TechSolutions Pro</a>
         </div>
-        <div id="search-results-container">
-            <ul id="search-results"></ul>
+        <div class="nav-links">
+          <a href="/services">Services</a>
+          <a href="/about">À propos</a>
+            <a href="/profile">Profile</a>
+            <% if (user && user.admin) { %>
+                <a href="/admin">Administration</a>
+            <% } %>
+           
+            <% if (!user){ %>
+            <a href="/login" class="button primary">Se connecter</a>
+          <% } %>
+          <% if (user) { %>
+            <form action="/api/users/logout" method="post">
+              <button type="submit" class="button primary">Se déconnecter</button>
+            </form>
+          <% } %>
         </div>
-        </section>
-          <% } else { %>
-        <nav>
-            <ul>
-                <li><a href="/">Accueil</a></li>
-                <li><a href="/profile">Mon Profil</a></li>
-                <li><a href="/login">Se connecter</a></li>
-                <li><a href="/register">Créer un compte</a></li>
-            </ul>
-        </nav>
-        <% } %>
-</header>
+      </nav>
+    </div>
+  </header>
+  

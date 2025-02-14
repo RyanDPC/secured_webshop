@@ -39,8 +39,7 @@ export const fetchData = async (url) => {
       throw new Error("Erreur lors de la requête GET");
     }
 
-    const result = await response.json();
-    return result;
+    return await response.json();
   } catch (error) {
     console.error("Erreur dans la requête GET:", error);
     throw error;

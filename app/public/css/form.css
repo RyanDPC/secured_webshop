@@ -1,18 +1,10 @@
-/* Global Styles */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #1c1f24; /* Fond sombre pour toute la page */
-    color: #ddd; /* Texte clair */
-}
 
 /* Conteneur pour les formulaires d'inscription et de connexion */
 .signup-container,
 .login-container {
     max-width: 600px;
-    margin: 5rem auto;
-    padding: 2rem;
+    margin: 15rem auto;
+    padding: 3rem;
     background-color: #2d2f35; /* Fond sombre pour le container */
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -78,6 +70,7 @@ button[type="submit"]:hover {
 
 /* Liens pour la redirection */
 p {
+    color: var(--text-color);
     text-align: center;
     font-size: 1rem;
 }
@@ -91,6 +84,59 @@ a:hover {
     text-decoration: underline;
 }
 
+.form-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--primary);
+    color: var(--text-color);
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-submit:hover {
+    background: var(--secondary);
+}
+
+.login-link,
+.register-link {
+    text-align: center;
+    margin-top: 1rem;
+}
 /* Responsive Design */
 @media (max-width: 768px) {
     .signup-container,
@@ -126,5 +172,16 @@ a:hover {
     button[type="submit"] {
         padding: 0.8rem;
         font-size: 1rem;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

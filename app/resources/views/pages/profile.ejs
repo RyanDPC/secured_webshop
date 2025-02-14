@@ -1,9 +1,13 @@
 
 <div class="profile-container">
-    <h1>Mon Profil</h1>
-    <p>Bienvenue sur votre profil !</p>
-    <p>Nom d'utilisateur : <strong><%= username %></strong></p>
-    <p>Email : <strong><%= email %></strong></p>
+    <h1>Mon Profile</h1>
+    <p>Bienvenue sur votre profile !</p>
+    <% if (user) { %>
+    <p>Rôle : <strong><%= user.admin ? 'Administrateur' : 'Utilisateur' %></strong></p>
+    <p>Nom d'utilisateur : <strong><%= user.username %></strong></p>
+    <p>Email : <strong><%= user.email %></strong></p>
+<% } %>
+
     <form action="/api/users/logout" method="post">
         <div class="buttons">
             <a href="/edit-profile" class="btn">Modifier le profil</a>
