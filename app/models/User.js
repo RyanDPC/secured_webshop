@@ -79,8 +79,8 @@ class User {
   }
 
   // Afficher un utilisateur
-  static async show(username) {
-    return await User.findByUsername(username);
+  static async show(id) {
+    return await User.findById(id);
   }
   static async showall() {
     const query = `SELECT * FROM t_users`;

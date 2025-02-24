@@ -190,18 +190,22 @@ class UserController {
     }
   }
   static async getUsersProfile(req, res) {
+    const userId = req.params.id;
     try {
-      const userId = req.session?.user?.id;
-      if (!userId) {
-        return res
-          .status(401)
-          .json({ success: false, message: "Utilisateur non connecté" });
-      }
       const user = await User.show(userId);
-      res.status(200).json({ success: true, user });
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).json({ success: false, message: error.message });
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Utilisateur non trouvé",
+        });
+      }
+    } catch (err) {
+      console.error("Erreur lors de la récupération de l'utilisateur:", err);
+      res.status(500).json({
+        success: false,
+        message: "Erreur lors de la récupération de l'utilisateur",
+        error: err.message,
+      });
     }
   }
 }

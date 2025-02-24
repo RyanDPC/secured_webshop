@@ -41,7 +41,7 @@ function viewUserProfile() {
   }
 
   // Rediriger vers le profil de l'utilisateur
-  window.location.href = `/admin/users/${userId}`;
+  window.location.href = `api/admin/users/${userId}`;
 }
 
 // Rendre les fonctions disponibles globalement
