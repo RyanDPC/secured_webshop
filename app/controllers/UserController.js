@@ -190,18 +190,27 @@ class UserController {
     }
   }
   static async getUsersProfile(req, res) {
-    const userId = req.params.id;
+    const userId = req.params.id; // ID du profil qu'on veut voir
+
     try {
-      const user = await User.show(userId);
+      const user = await User.show(userId); // Récupérer les infos de l'utilisateur dans la base de données
+
       if (!user) {
         return res.status(404).json({
           success: false,
           message: "Utilisateur non trouvé",
         });
       }
+
+      return res.render("pages/profile", {
+        title: "Profil de l'utilisateur",
+        cssFile: "profile.css",
+        user, // Envoyer les infos de l'utilisateur à la vue
+        loggedInUser: req.user, // Envoyer aussi l'utilisateur connecté (si nécessaire)
+      });
     } catch (err) {
       console.error("Erreur lors de la récupération de l'utilisateur:", err);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: "Erreur lors de la récupération de l'utilisateur",
         error: err.message,
