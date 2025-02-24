@@ -6,7 +6,7 @@ const dbConfig = {
   port: 6033, // Port du conteneur
   user: "db_user", // Utilisateur MySQL
   password: "db_user_pass", // Mot de passe de l'utilisateur MySQL
-  database: "MiniGamesStore", // Base de données à utiliser
+  database: "db_TechSolutions", // Base de données à utiliser
 };
 
 // Création de la connexion avec la base de données
@@ -30,12 +30,11 @@ function connectDb() {
 // Fonction pour créer la table users
 function createUsersTable() {
   const query = `
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE IF NOT EXISTS t_users (
       id INT AUTO_INCREMENT PRIMARY KEY,
       username VARCHAR(255) NOT NULL,
       email VARCHAR(255) NOT NULL,
       password_hash VARCHAR(255) NOT NULL,
-      salt VARCHAR(255) NOT NULL,
       admin BOOLEAN DEFAULT FALSE,
       profile_pic VARCHAR(255),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

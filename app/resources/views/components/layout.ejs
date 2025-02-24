@@ -1,37 +1,35 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Services informatiques professionnels">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Services informatiques professionnels" />
     <title><%= title %> - TechSolutions Pro</title>
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <!-- CSS -->
     <% if (cssFile) { %>
-        <link rel="stylesheet" href="/<%= cssFile %>">
-        <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/<%= cssFile %>" />
+    <link rel="stylesheet" href="/style.css" />
     <% } %>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="icon" href="favicon.ico">
-</head>
-<body>
-    <header class="main-header">
-        <%- include('../partials/header') %>
-    </header>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="icon" href="favicon.ico" />
+  </head>
+  <body>
+    <header class="main-header"><%- include('../partials/header') %></header>
 
-    <main class="main-content">
-        <%- body %>
-    </main>
+    <main class="main-content"><%- body %></main>
 
-    <footer class="main-footer">
-        <%- include('../partials/footer') %>
-    </footer>
+    <footer class="main-footer"><%- include('../partials/footer') %></footer>
 
     <script type="module" src="/js/api.js"></script>
+    <script type="module" src="/js/admin.js"></script>
     <script type="module" src="/js/pages.js"></script>
     <%- script %>
-</body>
+  </body>
 </html>

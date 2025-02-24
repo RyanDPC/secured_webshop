@@ -7,6 +7,7 @@ const expressLayouts = require("express-ejs-layouts");
 const { connectDb } = require("./db/database"); // Importer la connexion à la base de données
 const { connectRoot } = require("./db/data"); // Importer la connexion à la base de données
 const userRoute = require("./routes/User"); // Importer les routes des utilisateurs
+const adminRoute = require("./routes/Admin"); // Importer les routes des administrateurs
 const pagesRoute = require("./routes/Pages"); // Importer les routes des pages
 const { authenticateToken } = require("./middlewares/auth");
 const app = express();
@@ -33,7 +34,7 @@ async function initApp() {
           httpOnly: true,
           sameSite: "strict",
         },
-    store: new session.MemoryStore(),
+        store: new session.MemoryStore(),
       })
     );
 
@@ -49,7 +50,6 @@ async function initApp() {
     app.use(express.static(path.join(publicPath, "js")));
     app.use(express.static(path.join("./", "middlewares")));
 
-
     // Configuration du moteur de templates EJS
     app.set("view engine", "ejs");
     app.set("views", path.join(__dirname, "resources/views"));
@@ -59,12 +59,13 @@ async function initApp() {
 
     // Routes API
     app.use("/api/users", userRoute);
-
+    app.use("/api/admin", adminRoute);
     // Routes des pages
     app.use("/", pagesRoute); // Utilisation des routes des pages
   } catch (error) {
     console.error("Erreur lors de l'initialisation de l'application:", error);
-  }}
+  }
+}
 
 initApp();
 

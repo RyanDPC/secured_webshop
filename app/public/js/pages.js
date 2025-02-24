@@ -6,28 +6,30 @@ document.addEventListener("DOMContentLoaded", () => {
   if (loginForm) {
     loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      
+
       // Remove any existing alerts
-      const existingAlerts = loginForm.querySelectorAll('.alert');
-      existingAlerts.forEach(alert => alert.remove());
+      const existingAlerts = loginForm.querySelectorAll(".alert");
+      existingAlerts.forEach((alert) => alert.remove());
 
       try {
         const response = await fetch("/api/users/login", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             username: loginForm.username.value,
-            password: loginForm.password.value
-          })
+            password: loginForm.password.value,
+          }),
         });
 
         const data = await response.json();
 
         // Create alert element
-        const alert = document.createElement('div');
-        alert.className = `alert ${data.success ? 'alert-success' : 'alert-error'}`;
+        const alert = document.createElement("div");
+        alert.className = `alert ${
+          data.success ? "alert-success" : "alert-error"
+        }`;
         alert.textContent = data.message;
         loginForm.insertBefore(alert, loginForm.firstChild);
 
@@ -37,8 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }, 1000);
         }
       } catch (error) {
-        const alert = document.createElement('div');
-        alert.className = 'alert alert-error';
+        const alert = document.createElement("div");
+        alert.className = "alert alert-error";
         alert.textContent = "Une erreur est survenue lors de la connexion";
         loginForm.insertBefore(alert, loginForm.firstChild);
       }
@@ -51,10 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
     signupForm.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      // Remove any existing error messages
-      const existingError = signupForm.querySelector('.alert-error');
-      if (existingError) existingError.remove();
-
       const data = {
         username: signupForm.username.value,
         email: signupForm.email.value,
@@ -64,30 +62,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         const result = await postData("/api/users/register", data);
-        
         if (!result.success) {
-          // Create and display error message
-          const errorDiv = document.createElement('div');
-          errorDiv.className = 'alert alert-error';
-          errorDiv.textContent = result.message;
-          signupForm.insertBefore(errorDiv, signupForm.firstChild);
+          alert(result.message);
         } else {
-          // Create and display success message
-          const successDiv = document.createElement('div');
-          successDiv.className = 'alert alert-success';
-          successDiv.textContent = result.message;
-          signupForm.insertBefore(successDiv, signupForm.firstChild);
-          
-          // Redirect after successful registration
-          setTimeout(() => {
-            window.location.href = "/login";
-          }, 2000);
+          alert("Inscription réussie !");
+          window.location.href = "/login";
         }
       } catch (error) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'alert alert-error';
-        errorDiv.textContent = "Une erreur est survenue lors de l'inscription";
-        signupForm.insertBefore(errorDiv, signupForm.firstChild);
+        const alert = document.createElement("div");
+        alert.className = "alert alert-error";
+        alert.textContent = "Une erreur est survenue lors de l'inscription";
+        signupForm.insertBefore(alert, signupForm.firstChild);
       }
     });
   }
@@ -127,6 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   const errorMessage = document.getElementById("error-message");
   if (errorMessage && errorMessage.dataset.error) {
-      alert(errorMessage.dataset.error);
+    alert(errorMessage.dataset.error);
   }
 });
