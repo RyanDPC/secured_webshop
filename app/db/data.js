@@ -16,7 +16,7 @@ const rootConnection = mysql.createConnection(rootConfig);
 function connectRoot() {
   return new Promise((resolve, reject) => {
     // First connect without specifying a database
-    const initialConfig = { ...rootConfig };
+    const initialConfig = rootConfig ;
     delete initialConfig.database;
 
     const initialConnection = mysql.createConnection(initialConfig);
@@ -26,23 +26,8 @@ function connectRoot() {
         console.error("Erreur de connexion en tant que root:", err.stack);
         return reject(err);
       }
-
-      // // Create database and user
-      // initialConnection.query(
-      //   "CREATE DATABASE IF NOT EXISTS db_TechSolutions",
-      //   (err) => {
-      //     if (err) {
-      //       console.error(
-      //         "Erreur lors de la création de la base de données:",
-      //         err.stack
-      //       );
-      //       return reject(err);
-      //     }
-
-      const user = "db_user";
-      const password = "db_user_pass";
-      const createUserQuery = `CREATE USER IF NOT EXISTS '${user}'@'%' IDENTIFIED BY '${password}'`;
-      const grantPrivilegesQuery = `GRANT ALL PRIVILEGES ON db_TechSolutions.* TO '${user}'@'%' WITH GRANT OPTION`;
+      const createUserQuery = `CREATE USER IF NOT EXISTS 'db_user'@'%' IDENTIFIED BY 'db_user_pass'`;
+      const grantPrivilegesQuery = `GRANT ALL PRIVILEGES ON db_TechSolutions.* TO 'db_user'@'%' WITH GRANT OPTION`;
 
       initialConnection.query(createUserQuery, (err) => {
         if (err) {

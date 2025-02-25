@@ -115,8 +115,6 @@ class UserController {
   }
   static async logout(req, res) {
     try {
-      console.log("Logging out user:", req.user);
-
       // Clear the token from cookies
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
@@ -193,9 +191,9 @@ class UserController {
     const userId = req.params.id; // ID du profil qu'on veut voir
 
     try {
-      const user = await User.show(userId); // Récupérer les infos de l'utilisateur dans la base de données
+      const profile = await User.show(userId); // Récupérer les infos de l'utilisateur dans la base de données
 
-      if (!user) {
+      if (!profile) {
         return res.status(404).json({
           success: false,
           message: "Utilisateur non trouvé",
@@ -203,10 +201,11 @@ class UserController {
       }
 
       return res.render("pages/profile", {
-        title: "Profil de l'utilisateur",
-        cssFile: "profile.css",
-        user, // Envoyer les infos de l'utilisateur à la vue
-        loggedInUser: req.user, // Envoyer aussi l'utilisateur connecté (si nécessaire)
+          title: `Profil de ${profile.username}`,
+             cssFile: "profile.css",
+             user: req.user || null,    // Pour le header (utilisateur connecté)
+             profile: profile || null,  // Pour le contenu du profil
+             isOwnProfile: false       // Pour indiquer que c'est le profil d'un autre
       });
     } catch (err) {
       console.error("Erreur lors de la récupération de l'utilisateur:", err);

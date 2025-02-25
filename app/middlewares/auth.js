@@ -14,14 +14,13 @@ if (!process.env.JWT_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
 // Générer un token d'accès (valable pour 1 heure)
 exports.generateAccessToken = (user) => {
   const { password_hash, ...User } = user;
-  return jwt.sign(User, process.env.JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign(User, process.env.JWT_SECRET, { expiresIn: "10m" });
 };
 
 // Générer un token de rafraîchissement (valable pour 7 jours)
 exports.generateRefreshToken = (user) => {
   const { password_hash, ...User } = user;
-
-  return jwt.sign(User, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+  return jwt.sign(User, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "15m" });
 };
 
 // Middleware to check token and set user information

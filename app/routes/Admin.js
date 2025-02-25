@@ -8,7 +8,7 @@ const { authenticateToken } = require("../middlewares/auth");
 router.get("/users", authenticateToken, AdminController.showAllUsers);
 
 // Route pour voir un user spécifique
-router.get("/users/:id", authenticateToken, AdminController.getUsersProfile);
+router.get("/profile/:id", authenticateToken, AdminController.getUsersProfile);
 
 // Route pour rechercher un user
 router.get("/:id", authenticateToken, AdminController.rechercheUser);

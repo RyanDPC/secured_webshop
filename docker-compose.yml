@@ -7,7 +7,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: db_user
       MYSQL_PASSWORD: db_user_pass
-      MYSQL_DATABASE: MiniGamesStore
+      MYSQL_DATABASE: db_TechSolutions
     restart: always
     ports:
       - "6033:3306"  # Expose le port 3306 du conteneur MySQL vers le port 6033 de l'hôte

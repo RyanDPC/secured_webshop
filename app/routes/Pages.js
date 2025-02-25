@@ -46,7 +46,9 @@ router.get("/profile", authenticateToken, (req, res) => {
   renderView(res, "pages/profile", {
     title: "Mon Profil",
     cssFile: "profile.css",
-    user: req.user  || null,
+    user: req.user || null,     // Pour le header (utilisateur connecté)
+    profile: req.user || null,  // Pour le contenu du profil
+    isOwnProfile: true         // Pour indiquer que c'est notre propre profil
   });
 });
 
