@@ -1,13 +1,20 @@
 const dotenv = require("dotenv");
-dotenv.config();
 const bcrypt = require("bcrypt");
-const {
-  generateAccessToken,
-  generateRefreshToken,
-} = require("../middlewares/auth");
-const User = require("../models/User"); // Corrected import statement
+const { generateAccessToken, generateRefreshToken } = require("../middlewares/auth");
+const User = require("../models/User");
+
+dotenv.config();
 
 class UserController {
+  // Configuration des cookies
+  static #cookieConfig = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+    maxAge: 3600000 // 1 heure
+  };
+
+  // Register - Inscription d'un nouvel utilisateur
   static async register(req, res) {
     try {
       const { username, email, password } = req.body;
@@ -15,7 +22,7 @@ class UserController {
       if (!username || !email || !password) {
         return res.status(400).json({
           success: false,
-          message: "Veuillez remplir tous les champs",
+          message: "Veuillez remplir tous les champs"
         });
       }
 
@@ -23,37 +30,34 @@ class UserController {
       if (existingUser) {
         return res.status(409).json({
           success: false,
-          message: "Ce nom d'utilisateur est déjà pris",
+          message: "Ce nom d'utilisateur est déjà pris"
         });
       }
 
       const salt = bcrypt.genSaltSync(10);
       const password_hash = bcrypt.hashSync(password, salt);
-
-      const user = await User.create({
-        username,
-        email,
-        password_hash,
-      });
+      const user = await User.create({ username, email, password_hash });
 
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
 
+      res.cookie("accessToken", accessToken, this.#cookieConfig);
+      res.cookie("refreshToken", refreshToken, this.#cookieConfig);
+
       res.status(201).json({
         success: true,
         message: "Compte créé avec succès",
-        userId: user.id,
-        accessToken,
-        refreshToken,
+        userId: user.id
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Une erreur est survenue lors de la création du compte",
+        message: "Erreur lors de la création du compte"
       });
     }
   }
 
+  // Login - Connexion d'un utilisateur
   static async login(req, res) {
     try {
       const { username, password } = req.body;
@@ -61,158 +65,128 @@ class UserController {
       if (!username || !password) {
         return res.status(400).json({
           success: false,
-          message: "Veuillez remplir tous les champs",
+          message: "Veuillez remplir tous les champs"
         });
       }
 
       const user = await User.findByUsername(username);
-
-      if (!user) {
+      
+      if (!user || !bcrypt.compareSync(password, user.password_hash)) {
         return res.status(401).json({
           success: false,
-          message: "Identifiants introuvables ou incorrects",
-        });
-      }
-
-      const isMatch = bcrypt.compareSync(password, user.password_hash);
-
-      if (!isMatch) {
-        return res.status(401).json({
-          success: false,
-          message: "Mot de passe incorrects",
+          message: "Identifiants incorrects"
         });
       }
 
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
 
-      res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 3600000, // 1 hour in milliseconds
-      });
-
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 3600000, // 1 hour in milliseconds
-      });
-
+      res.cookie("accessToken", accessToken, this.#cookieConfig);
+      res.cookie("refreshToken", refreshToken, this.#cookieConfig);
+      req.session.user = user;
+      
       res.status(200).json({
         success: true,
-        message: "Connexion réussie",
-        accessToken,
-        refreshToken,
+        message: "Connexion réussie",  // Added missing comma here
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          admin: user.admin
+        }
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Une erreur est survenue lors de la connexion",
+        message: "Erreur lors de la connexion"
       });
     }
   }
+
+  // Logout - Déconnexion d'un utilisateur
   static async logout(req, res) {
     try {
-      // Clear the token from cookies
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
-
-      // Destroy the session
-      req.session.destroy((err) => {
-        if (err) {
-          console.error("Error destroying session:", err);
-          return res
-            .status(500)
-            .json({ message: "Erreur lors de la déconnexion" });
-        }
-
-        // Redirect to home page after successful logout
+      
+      req.session.destroy(err => {
+        if (err) throw new Error("Erreur session");
         res.redirect("/");
       });
     } catch (error) {
-      console.error("Error logging out user:", error);
-      res.status(500).json({
-        message: "Erreur lors de la déconnexion",
-        error,
-      });
-    }
-  }
-  static async rechercheUser(req, res) {
-    try {
-      const { username } = req.params;
-      console.log("Searching for user with username:", username);
-
-      const user = await User.show(username);
-
-      if (!user) {
-        console.log("User not found:", username);
-        return res.status(404).json({ message: "Utilisateur non trouvé" });
-      }
-
-      console.log("User found:", user);
-
-      res.status(200).json({
-        message: "Utilisateur trouvé",
-        user,
-      });
-    } catch (error) {
-      console.error("Error searching for user:", error);
-      res.status(500).json({
-        message: "Erreur lors de la recherche de l'utilisateur",
-        error,
-      });
-    }
-  }
-  static async showAllUsers(req, res) {
-    try {
-      const users = await User.showall();
-      if (!users) {
-        return res.status(404).json({
-          success: false,
-          message: "Aucun utilisateur trouvé",
-        });
-      }
-      res.status(200).json({
-        success: true,
-        users: users,
-      });
-    } catch (error) {
-      console.error("Erreur lors de la récupération des utilisateurs:", error);
       res.status(500).json({
         success: false,
-        message: "Erreur lors de la récupération des utilisateurs",
-        error: error.message,
+        message: "Erreur lors de la déconnexion"
       });
     }
   }
-  static async getUsersProfile(req, res) {
-    const userId = req.params.id; // ID du profil qu'on veut voir
 
+  // Show - Affichage d'un profil utilisateur
+  static async show(req, res) {
     try {
-      const profile = await User.show(userId); // Récupérer les infos de l'utilisateur dans la base de données
-
+      const profile = await User.show(req.params.id);
+      
       if (!profile) {
         return res.status(404).json({
           success: false,
-          message: "Utilisateur non trouvé",
+          message: "Utilisateur non trouvé"
         });
       }
 
-      return res.render("pages/profile", {
-          title: `Profil de ${profile.username}`,
-             cssFile: "profile.css",
-             user: req.user || null,    // Pour le header (utilisateur connecté)
-             profile: profile || null,  // Pour le contenu du profil
-             isOwnProfile: false       // Pour indiquer que c'est le profil d'un autre
+      res.render("pages/profile", {
+        title: `Profil de ${profile.username}`,
+        cssFile: "profile.css",
+        user: req.user || null,
+        profile: profile,
+        isOwnProfile: false
       });
-    } catch (err) {
-      console.error("Erreur lors de la récupération de l'utilisateur:", err);
-      return res.status(500).json({
+    } catch (error) {
+      res.status(500).json({
         success: false,
-        message: "Erreur lors de la récupération de l'utilisateur",
-        error: err.message,
+        message: "Erreur lors de la récupération du profil"
+      });
+    }
+  }
+
+  // Reach - Recherche d'utilisateurs
+  static async reach(req, res) {
+    try {
+      const { username } = req.query;
+      const users = await User.searchByUsername(username);
+
+      res.status(200).json({
+        success: true,
+        users: users || []
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Erreur lors de la recherche"
+      });
+    }
+  }
+
+  // Destroy - Suppression d'un compte utilisateur
+  static async destroy(req, res) {
+    try {
+      const userId = req.params.id;
+      const result = await User.delete(userId);
+
+      if (!result) {
+        return res.status(404).json({
+          success: false,
+          message: "Utilisateur non trouvé"
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Compte supprimé avec succès"
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Erreur lors de la suppression du compte"
       });
     }
   }

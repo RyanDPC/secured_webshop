@@ -1,19 +1,16 @@
-// routes/UserRoutes.js
 const express = require("express");
 const router = express.Router();
 const UserController = require("../controllers/UserController");
 const { authenticateToken } = require("../middlewares/auth");
 
-// Route pour créer un utilisateur
+// Public routes
 router.post("/register", UserController.register);
+router.post("/login", UserController.login);
 
-// Route pour se connecter
-router.post("/login",UserController.login);
-
-// // Route pour éditer un utilisateur
-router.put("/:id", UserController.rechercheUser);
-
-//Route pour se déconnecter
-router.post("/logout", UserController.logout);
+// Protected routes
+router.post("/logout", authenticateToken, UserController.logout);
+router.get("/profile/:id", authenticateToken, UserController.show);
+router.get("/search", authenticateToken, UserController.reach);
+router.delete("/:id", authenticateToken, UserController.destroy);
 
 module.exports = router;

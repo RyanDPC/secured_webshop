@@ -1,67 +1,83 @@
 const mysql = require("mysql2");
 
-// Configuration de la connexion avec l'utilisateur root pour injecter des données
-const rootConfig = {
-  host: "localhost", // Nom du service Docker pour MySQL
-  port: 6033, // Port du conteneur
-  user: "root", // Utilisateur MySQL
-  password: "root", // Mot de passe pour rootesStore"
-  database: "db_TechSolutions",
-};
+class DatabaseManager {
+  static #config = {
+    host: "localhost",
+    port: 6033,
+    user: "root",
+    password: "root"
+  };
 
-// Création de la connexion avec la base de données pour injection
-const rootConnection = mysql.createConnection(rootConfig);
+  static #createConnection(config) {
+    return mysql.createConnection(config);
+  }
 
-// Fonction pour s'assurer que l'utilisateur root peut se connecter et injecter des données
-function connectRoot() {
-  return new Promise((resolve, reject) => {
-    // First connect without specifying a database
-    const initialConfig = rootConfig ;
-    delete initialConfig.database;
-
-    const initialConnection = mysql.createConnection(initialConfig);
-
-    initialConnection.connect((err) => {
-      if (err) {
-        console.error("Erreur de connexion en tant que root:", err.stack);
-        return reject(err);
-      }
-      const createUserQuery = `CREATE USER IF NOT EXISTS 'db_user'@'%' IDENTIFIED BY 'db_user_pass'`;
-      const grantPrivilegesQuery = `GRANT ALL PRIVILEGES ON db_TechSolutions.* TO 'db_user'@'%' WITH GRANT OPTION`;
-
-      initialConnection.query(createUserQuery, (err) => {
+  static async #executeQuery(connection, query) {
+    return new Promise((resolve, reject) => {
+      connection.query(query, (err, result) => {
         if (err) {
-          console.error(
-            "Erreur lors de la création de l'utilisateur:",
-            err.stack
-          );
+          console.error(`Query Error: ${err.message}`);
           return reject(err);
         }
-
-        initialConnection.query(grantPrivilegesQuery, (err) => {
-          if (err) {
-            console.error(
-              "Erreur lors de l'attribution des privilèges:",
-              err.stack
-            );
-            return reject(err);
-          }
-
-          // Now connect to the database
-          initialConnection.query("USE db_TechSolutions", (err) => {
-            if (err) {
-              console.error(
-                "Erreur lors du changement de base de données:",
-                err.stack
-              );
-              return reject(err);
-            }
-            resolve();
-          });
-        });
+        resolve(result);
       });
     });
-  });
+  }
+
+  static async connectRoot() {
+    try {
+      // Create initial connection
+      const connection = this.#createConnection(this.#config);
+      
+      // Connect to MySQL
+      await new Promise((resolve, reject) => {
+        connection.connect(err => {
+          if (err) {
+            console.error("Root Connection Error:", err.message);
+            reject(err);
+          }
+          resolve();
+        });
+      });
+
+      // Create database if not exists
+      await this.#executeQuery(
+        connection,
+        `CREATE DATABASE IF NOT EXISTS db_TechSolutions`
+      );
+
+      // Create user and grant privileges
+      await this.#executeQuery(
+        connection,
+        `CREATE USER IF NOT EXISTS 'db_user'@'%' IDENTIFIED BY 'db_user_pass'`
+      );
+
+      await this.#executeQuery(
+        connection,
+        `GRANT ALL PRIVILEGES ON db_TechSolutions.* TO 'db_user'@'%' WITH GRANT OPTION`
+      );
+
+      // Create users table
+      await this.#executeQuery(connection, `USE db_TechSolutions`);
+      await this.#executeQuery(connection, `
+        CREATE TABLE IF NOT EXISTS t_users (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          username VARCHAR(255) NOT NULL,
+          email VARCHAR(255) NOT NULL,
+          password_hash VARCHAR(255) NOT NULL,
+          admin BOOLEAN DEFAULT FALSE,
+          profile_pic VARCHAR(255),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+      `);
+
+      return connection;
+    } catch (error) {
+      console.error("Database Setup Error:", error.message);
+      throw error;
+    }
+  }
 }
 
-module.exports = { connectRoot, rootConnection };
+module.exports = {DatabaseManager};

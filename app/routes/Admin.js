@@ -1,16 +1,22 @@
-// routes/UserRoutes.js
 const express = require("express");
 const router = express.Router();
-const AdminController = require("../controllers/UserController");
+const UserController = require("../controllers/UserController");
 const { authenticateToken } = require("../middlewares/auth");
 
-// Route pour montrer tous les users (doit être en premier)
-router.get("/users", authenticateToken, AdminController.showAllUsers);
+// Middleware to check admin rights
+const checkAdmin = (req, res, next) => {
+  if (!req.user || req.user.admin !== 1) {
+    return res.status(403).json({
+      success: false,
+      message: "Accès réservé aux administrateurs"
+    });
+  }
+  next();
+};
 
-// Route pour voir un user spécifique
-router.get("/profile/:id", authenticateToken, AdminController.getUsersProfile);
-
-// Route pour rechercher un user
-router.get("/:id", authenticateToken, AdminController.rechercheUser);
+// Admin-only routes
+router.get("/users", [authenticateToken, checkAdmin], UserController.reach);
+router.get("/profile/:id", [authenticateToken, checkAdmin], UserController.show);
+router.get("/users/:username", [authenticateToken, checkAdmin], UserController.reach);
 
 module.exports = router;

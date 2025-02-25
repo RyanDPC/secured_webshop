@@ -2,51 +2,24 @@
   <div class="admin-header">
     <h1>Administration</h1>
   </div>
-  <% if (user.admin) { %>
-  <p>Rôle : <strong>Administrateur</strong></p>
 
-  <!-- Section pour gérer les utilisateurs -->
-  <div class="admin-section">
-    <h2>Gestion des utilisateurs</h2>
-    <button onclick="loadUsers()" class="btn btn-primary">
-      Voir tous les utilisateurs
-    </button>
+  <!-- Affichage du rôle de l'utilisateur -->
+  <p>Rôle : <strong><%= user.admin ? 'Administrateur' : 'Utilisateur' %></strong></p>
 
-    <!-- Container pour la liste des utilisateurs -->
-    <div id="users-list" class="users-list-container" style="display: none">
-      <select id="users-select" class="users-select">
-        <option value="">Sélectionnez un utilisateur</option>
-      </select>
-      <button onclick="viewUserProfile()" class="btn btn-secondary">
-        Voir le profil
-      </button>
-    </div>
+  <!-- Barre de recherche -->
+  <div class="users-search-bar-container" id="users-search-bar">
+    <form id="search-users-form" onsubmit="return false;">
+      <input 
+        type="search" 
+        id="users-search" 
+        class="users-search" 
+        placeholder="Rechercher un utilisateur"
+      >
+    </form>
+    <div id="search-results" class="search-results"></div>
   </div>
 
-  <!-- Section pour gérer les paramètres -->
-  <div class="admin-section">
-    <h2>Paramètres</h2>
-    <a href="/api/admin/settings" class="btn btn-primary"
-      >Voir les paramètres</a
-    >
-    <a href="/api/admin/settings/edit" class="btn btn-secondary"
-      >Modifier les paramètres</a
-    >
-  </div>
-
-  <!-- Section pour gérer les rapports -->
-  <div class="admin-section">
-    <h2>Rapports</h2>
-    <a href="/api/admin/reports" class="btn btn-primary">Voir les rapports</a>
-    <a href="/api/admin/reports/generate" class="btn btn-secondary"
-      >Générer un rapport</a
-    >
-  </div>
-
-  <% } else { %>
-  <p>Rôle : <strong>Utilisateur</strong></p>
-  <% } %>
-
+  <!-- Déconnexion -->
   <form action="/api/users/logout" method="post">
     <div class="buttons">
       <button type="submit" class="btn btn-secondary">Se déconnecter</button>
