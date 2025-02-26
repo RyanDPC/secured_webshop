@@ -1,17 +1,17 @@
 const mysql = require("mysql2");
 
 const db = mysql.createConnection({
-  host: "localhost",
+  host: "",
   port: 6033,
   user: "db_user",
   password: "db_user_pass",
-  database: "db_TechSolutions"
+  database: "db_TechSolutions",
 });
 
 // Connect to database
 const connectDb = () => {
   return new Promise((resolve, reject) => {
-    db.connect(err => {
+    db.connect((err) => {
       if (err) {
         console.error("Database Connection Error:", err.message);
         return reject(err);
@@ -38,5 +38,5 @@ const executeQuery = (query, params = []) => {
 module.exports = {
   db,
   connectDb,
-  executeQuery
+  executeQuery,
 };
