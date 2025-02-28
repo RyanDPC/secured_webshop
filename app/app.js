@@ -23,17 +23,19 @@ async function initApp() {
     console.log("Database initialized successfully");
 
     // Setup session
-    app.use(session({
-      secret: "server.cert",
-      resave: false,
-      saveUninitialized: true,
-      cookie: {
-        secure: true,
-        httpOnly: true,
-        sameSite: "strict"
-      },
-      store: new session.MemoryStore()
-    }));
+    app.use(
+      session({
+        secret: "server.cert",
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+          secure: true,
+          httpOnly: true,
+          sameSite: "strict",
+        },
+        store: new session.MemoryStore(),
+      })
+    );
 
     // User session middleware
     app.use((req, res, next) => {
@@ -55,10 +57,9 @@ async function initApp() {
     app.set("layout extractScripts", true);
 
     // Routes
-    app.use("/api/users", userRoute);
-    app.use("/api/admin", adminRoute);
+    app.use("/api/users/", userRoute);
+    app.use("/api/admin/", adminRoute);
     app.use("/", pagesRoute);
-
   } catch (error) {
     console.error("Application initialization error:", error);
     process.exit(1);

@@ -2,8 +2,8 @@ const mysql = require("mysql2");
 
 class DatabaseManager {
   static #config = {
-    host: "",
-    port: 6033,
+    host: "db",
+    port: 3306,
     user: "root",
     password: "root",
   };
@@ -52,10 +52,10 @@ class DatabaseManager {
         `CREATE USER IF NOT EXISTS 'db_user'@'%' IDENTIFIED BY 'db_user_pass'`
       );
 
-      // await this.#executeQuery(
-      //   connection,
-      //   `GRANT ALL PRIVILEGES ON db_TechSolutions.* TO 'db_user'@'%' WITH GRANT OPTION`
-      // );
+      await this.#executeQuery(
+        connection,
+        `GRANT ALL PRIVILEGES ON db_TechSolutions.* TO 'db_user'@'%' WITH GRANT OPTION`
+      );
 
       // Create users table
       await this.#executeQuery(connection, `USE db_TechSolutions`);

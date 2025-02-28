@@ -12,10 +12,22 @@ class User {
   }
 
   // Create new user
-  static async create({ username, email, password_hash, admin = false }) {
-    const query = `INSERT INTO t_users (username, email, password_hash, admin) 
-                   VALUES (?, ?, ?, ?)`;
-    return await this.#executeQuery(query, [username, email, password_hash, admin]);
+  static async create({
+    username,
+    email,
+    password_hash,
+    admin = false,
+    profile_pic = "",
+  }) {
+    const query = `INSERT INTO t_users (username, email, password_hash, admin,profile_pic) 
+                   VALUES (?, ?, ?, ?, ?)`;
+    return await this.#executeQuery(query, [
+      username,
+      email,
+      password_hash,
+      admin,
+      profile_pic,
+    ]);
   }
   // Update user
   static async update(id, { username, email, password_hash, admin }) {
@@ -26,11 +38,11 @@ class User {
                        admin = ?
                    WHERE id = ?`;
     return await this.#executeQuery(query, [
-      username, 
-      email, 
-      password_hash, 
-      admin, 
-      id
+      username,
+      email,
+      password_hash,
+      admin,
+      id,
     ]);
   }
 
@@ -57,7 +69,7 @@ class User {
                    FROM t_users 
                    WHERE username LIKE ?`;
     const rows = await this.#executeQuery(query, [username]);
-    return rows.filter(user => 
+    return rows.filter((user) =>
       user.username.toLowerCase().includes(username.toLowerCase())
     );
   }

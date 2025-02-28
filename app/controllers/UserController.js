@@ -1,6 +1,9 @@
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
-const { generateAccessToken, generateRefreshToken } = require("../middlewares/auth");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../middlewares/auth");
 const User = require("../models/User");
 
 dotenv.config();
@@ -11,26 +14,31 @@ class UserController {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "Strict",
-    maxAge: 3600000 // 1 heure
+    maxAge: 3600000, // 1 heure
   };
 
   // Register - Inscription d'un nouvel utilisateur
   static async register(req, res) {
     try {
-      const { username, email, password } = req.body;
+      const { username, email, password, confirmpassword } = req.body;
 
-      if (!username || !email || !password) {
+      if (!username || !email || !password || !confirmpassword) {
         return res.status(400).json({
           success: false,
-          message: "Veuillez remplir tous les champs"
+          message: "Veuillez remplir tous les champs",
         });
       }
-
+      if (password !== confirmpassword) {
+        return res.status(400).json({
+          success: false,
+          message: "Les mots de passe ne correspondent pas",
+        });
+      }
       const existingUser = await User.findByUsername(username);
       if (existingUser) {
         return res.status(409).json({
           success: false,
-          message: "Ce nom d'utilisateur est déjà pris"
+          message: "Ce nom d'utilisateur est déjà pris",
         });
       }
 
@@ -47,12 +55,12 @@ class UserController {
       res.status(201).json({
         success: true,
         message: "Compte créé avec succès",
-        userId: user.id
+        userId: user.id,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Erreur lors de la création du compte"
+        message: "Erreur lors de la création du compte",
       });
     }
   }
@@ -65,16 +73,16 @@ class UserController {
       if (!username || !password) {
         return res.status(400).json({
           success: false,
-          message: "Veuillez remplir tous les champs"
+          message: "Veuillez remplir tous les champs",
         });
       }
 
       const user = await User.findByUsername(username);
-      
+
       if (!user || !bcrypt.compareSync(password, user.password_hash)) {
         return res.status(401).json({
           success: false,
-          message: "Identifiants incorrects"
+          message: "Identifiants incorrects",
         });
       }
 
@@ -84,21 +92,21 @@ class UserController {
       res.cookie("accessToken", accessToken, this.#cookieConfig);
       res.cookie("refreshToken", refreshToken, this.#cookieConfig);
       req.session.user = user;
-      
+
       res.status(200).json({
         success: true,
-        message: "Connexion réussie",  // Added missing comma here
+        message: "Connexion réussie", // Added missing comma here
         user: {
           id: user.id,
           username: user.username,
           email: user.email,
-          admin: user.admin
-        }
+          admin: user.admin,
+        },
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Erreur lors de la connexion"
+        message: "Erreur lors de la connexion",
       });
     }
   }
@@ -108,15 +116,15 @@ class UserController {
     try {
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
-      
-      req.session.destroy(err => {
+
+      req.session.destroy((err) => {
         if (err) throw new Error("Erreur session");
         res.redirect("/");
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Erreur lors de la déconnexion"
+        message: "Erreur lors de la déconnexion",
       });
     }
   }
@@ -125,11 +133,11 @@ class UserController {
   static async show(req, res) {
     try {
       const profile = await User.show(req.params.id);
-      
+
       if (!profile) {
         return res.status(404).json({
           success: false,
-          message: "Utilisateur non trouvé"
+          message: "Utilisateur non trouvé",
         });
       }
 
@@ -138,12 +146,12 @@ class UserController {
         cssFile: "profile.css",
         user: req.user || null,
         profile: profile,
-        isOwnProfile: false
+        isOwnProfile: false,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Erreur lors de la récupération du profil"
+        message: "Erreur lors de la récupération du profil",
       });
     }
   }
@@ -156,12 +164,12 @@ class UserController {
 
       res.status(200).json({
         success: true,
-        users: users || []
+        users: users || [],
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Erreur lors de la recherche"
+        message: "Erreur lors de la recherche",
       });
     }
   }
@@ -175,18 +183,18 @@ class UserController {
       if (!result) {
         return res.status(404).json({
           success: false,
-          message: "Utilisateur non trouvé"
+          message: "Utilisateur non trouvé",
         });
       }
 
       res.status(200).json({
         success: true,
-        message: "Compte supprimé avec succès"
+        message: "Compte supprimé avec succès",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Erreur lors de la suppression du compte"
+        message: "Erreur lors de la suppression du compte",
       });
     }
   }

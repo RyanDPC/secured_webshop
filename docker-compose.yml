@@ -1,4 +1,4 @@
-
+version: "3.8"
 services:
   db:
     image: mysql:8.0.30
@@ -10,50 +10,56 @@ services:
       MYSQL_DATABASE: db_TechSolutions
     restart: always
     ports:
-      - "6033:3306"  # Expose le port 3306 du conteneur MySQL vers le port 6033 de l'hôte
+      - "6033:3306"
     volumes:
-      - dbdata:/var/lib/mysql  # Volume pour persister les données
+      - dbdata:/var/lib/mysql
     networks:
-      - app-network  # Attacher le conteneur à un réseau Docker
+      - app-network
 
   phpmyadmin:
     image: phpmyadmin:5.2.0
     container_name: pma_container
     environment:
-      PMA_HOST: db  # Nom du conteneur MySQL pour la connexion
+      PMA_HOST: db
       PMA_PORT: 3306
       PMA_ARBITRARY: 1
     restart: always
     ports:
-      - "8081:80"  # Expose phpMyAdmin sur le port 8081
+      - "8081:80"
     networks:
-      - app-network  # Attacher phpMyAdmin au même réseau que la DB
+      - app-network
+    depends_on:
+      - db
 
-  nodejs:
+  app:
     build:
-      context: .  # Dossier courant pour le contexte de construction
-      dockerfile: nodejs.dockerfile  # Dockerfile personnalisé pour Node.js
-    container_name: nodejs_container
+      context: .
+      dockerfile: nodejs.dockerfile
+    container_name: node_app
     user: "node"
-    working_dir: /home/node/app  # Le répertoire de travail dans le conteneur
+    working_dir: /home/node/app
     environment:
-      NODE_ENV: development  # Ou production si nécessaire
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=db_user
+      - DB_PASSWORD=db_user_pass
+      - DB_NAME=db_TechSolutions
+      - DB_PORT=3306
     volumes:
-      - ./app:/home/node/app  # Monter le répertoire local `./app` dans le conteneur
-      - ./ssl:/home/node/app/ssl  # Monter un dossier SSL si nécessaire
-    expose:
-      - "8080"  # Expose le port 8080 à l'intérieur du conteneur
+      - ./app:/home/node/app
+      - ./ssl:/home/node/app/ssl
+      - /home/node/app/node_modules
     ports:
-      - "8080:8080"  # Expose le port 8080 sur l'hôte
-    command: "npm start"  # Démarre l'application avec `npm start`
+      - "8080:8080"
+    command: "npm start"
     networks:
-      - app-network  # Attacher Node.js au même réseau que MySQL et phpMyAdmin
+      - app-network
+    depends_on:
+      - db
 
-# Définition des volumes
 volumes:
-  dbdata:  # Volume persistant pour MySQL
+  dbdata:
 
-# Définition du réseau Docker
 networks:
   app-network:
-    driver: bridge  # Utilisation du réseau bridge pour la communication entre conteneurs
+    driver: bridge

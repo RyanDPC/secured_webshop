@@ -2,10 +2,13 @@ FROM node:20
 
 RUN npm install -g nodemon
 WORKDIR /home/node/app
-COPY app/package.json .
+COPY app/package.json ./
 
 RUN npm install
-COPY app/ ./ 
+COPY ./app/ ./ 
+
+# Install dependencies
+RUN npm ci
 
 EXPOSE 8080
 CMD ["nodemon", "server.js"]
