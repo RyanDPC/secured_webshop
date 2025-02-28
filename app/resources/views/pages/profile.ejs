@@ -1,7 +1,6 @@
 
 <div class="profile-container">
-    <h1>Mon Profile</h1>
-    <h1><%= isOwnProfile ? 'Mon Profil' : 'Profil de l\'utilisateur' %></h1>
+    <h1><%= isOwnProfile ? 'Mon Profile' : 'Profil de l\'utilisateur' %></h1>
     <p>Bienvenue sur la page de profile !</p>
     <% if (profile) { %>
     <p>Rôle : <strong><%= profile.admin ? 'Administrateur' : 'Utilisateur' %></strong></p>
@@ -11,7 +10,7 @@
 
     <form action="/api/users/logout" method="post">
         <div class="buttons">
-            <a href="/edit-profile" class="btn">Modifier le profil</a>
+            <a href="/edit-profile" class="btn">Modifier le profile</a>
             <button type="submit" class="btn">Se déconnecter</button>
         </div>
     </form>

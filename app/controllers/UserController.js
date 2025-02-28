@@ -10,7 +10,7 @@ dotenv.config();
 
 class UserController {
   // Configuration des cookies
-  static #cookieConfig = {
+  static cookieConfig = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "Strict",
@@ -20,15 +20,15 @@ class UserController {
   // Register - Inscription d'un nouvel utilisateur
   static async register(req, res) {
     try {
-      const { username, email, password, confirmpassword } = req.body;
+      const { username, email, password, confirmPassword } = req.body;
 
-      if (!username || !email || !password || !confirmpassword) {
+      if (!username || !email || !password || !confirmPassword) {
         return res.status(400).json({
           success: false,
           message: "Veuillez remplir tous les champs",
         });
       }
-      if (password !== confirmpassword) {
+      if (password !== confirmPassword) {
         return res.status(400).json({
           success: false,
           message: "Les mots de passe ne correspondent pas",
@@ -49,8 +49,8 @@ class UserController {
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
 
-      res.cookie("accessToken", accessToken, this.#cookieConfig);
-      res.cookie("refreshToken", refreshToken, this.#cookieConfig);
+      res.cookie("accessToken", accessToken, UserController.cookieConfig);
+      res.cookie("refreshToken", refreshToken, UserController.cookieConfig);
 
       res.status(201).json({
         success: true,
@@ -69,7 +69,6 @@ class UserController {
   static async login(req, res) {
     try {
       const { username, password } = req.body;
-
       if (!username || !password) {
         return res.status(400).json({
           success: false,
@@ -89,13 +88,12 @@ class UserController {
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
 
-      res.cookie("accessToken", accessToken, this.#cookieConfig);
-      res.cookie("refreshToken", refreshToken, this.#cookieConfig);
-      req.session.user = user;
+      res.cookie("accessToken", accessToken, UserController.cookieConfig);
+      res.cookie("refreshToken", refreshToken, UserController.cookieConfig);
 
       res.status(200).json({
         success: true,
-        message: "Connexion réussie", // Added missing comma here
+        message: "Connexion réussie",
         user: {
           id: user.id,
           username: user.username,
@@ -104,6 +102,7 @@ class UserController {
         },
       });
     } catch (error) {
+      console.error("Login error:", error); // Log the error
       res.status(500).json({
         success: false,
         message: "Erreur lors de la connexion",
@@ -132,7 +131,7 @@ class UserController {
   // Show - Affichage d'un profil utilisateur
   static async show(req, res) {
     try {
-      const profile = await User.show(req.params.id);
+      const profile = await User.findById(req.params.id);
 
       if (!profile) {
         return res.status(404).json({
@@ -151,7 +150,7 @@ class UserController {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Erreur lors de la récupération du profil",
+        message: "Erreur lors de la récupération du profile",
       });
     }
   }
