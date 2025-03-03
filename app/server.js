@@ -13,6 +13,6 @@ const sslOptions = {
 // Démarrer le serveur HTTPS
 const httpsServer = https.createServer(sslOptions, app);
 
-httpsServer.listen(8080, () => {
-  console.log("Serveur HTTPS lancé sur https://localhost:8080");
+httpsServer.listen(443, () => {
+  console.log("Serveur HTTPS lancé sur https://localhost:443");
 });

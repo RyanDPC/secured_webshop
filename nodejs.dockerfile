@@ -10,5 +10,5 @@ COPY ./app/ ./
 # Install dependencies
 RUN npm ci
 
-EXPOSE 8080
+EXPOSE 443
 CMD ["nodemon", "server.js"]
