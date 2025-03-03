@@ -1,82 +1,89 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const { findByUsername } = require("../models/User");
 dotenv.config({ path: "./.env" });
 
-class AuthMiddleware {
-  static #JWT_SECRET = process.env.JWT_SECRET;
-  static #REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
-  // Validate environment variables on startup
-  static validateEnv() {
-    if (!this.#JWT_SECRET || !this.#REFRESH_TOKEN_SECRET) {
-      console.error("JWT_SECRET or REFRESH_TOKEN_SECRET not defined");
-      process.exit(1);
-    }
-  }
+if (!JWT_SECRET || !REFRESH_TOKEN_SECRET) {
+  console.error("JWT_SECRET or REFRESH_TOKEN_SECRET not defined");
+  process.exit(1);
+}
 
-  // Helper to create JWT token
-  static #createToken(user, secret, expiresIn) {
+module.exports = {
+  generateAccessToken: (user) => {
     const { password_hash, ...userData } = user;
-    return jwt.sign(userData, secret, { expiresIn });
-  }
+    return jwt.sign(userData, JWT_SECRET, { expiresIn: "1m" });
+  },
 
-  // Helper to verify JWT token
-  static #verifyToken(token, secret) {
-    return new Promise((resolve, reject) => {
-      jwt.verify(token, secret, (err, decoded) => {
-        if (err) reject(err);
-        resolve(decoded);
-      });
-    });
-  }
+  generateRefreshToken: (user) => {
+    const { password_hash, ...userData } = user;
+    return jwt.sign(userData, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+  },
 
-  // Generate access token (10 minutes)
-  static generateAccessToken(user) {
-    return this.#createToken(user, this.#JWT_SECRET, "10m");
-  }
-
-  // Generate refresh token (15 minutes)
-  static generateRefreshToken(user) {
-    return this.#createToken(user, this.#REFRESH_TOKEN_SECRET, "15m");
-  }
-
-  // Check token middleware
-  static async checkToken(req, res, next) {
+  checkToken: async (req, res, next) => {
     const token = req.cookies.accessToken;
     if (!token) {
       return next();
     }
 
-    try {
-      req.user = await AuthMiddleware.#verifyToken(token, AuthMiddleware.#JWT_SECRET);
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: "Token invalide" });
+      }
+      req.user = decoded;
       next();
-    } catch (error) {
-      res.status(401).json({ message: "Token invalide" });
+    });
+  },
+
+  authenticateToken: async (req, res, next) => {
+    const accessToken = req.cookies.accessToken;
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!accessToken) {
+      return res.redirect(
+        "/login?error=Vous devez être connecté pour accéder à cette page."
+      );
     }
-  }
 
-  // Authenticate token middleware
-  static async authenticateToken(req, res, next) {
-    const token = req.cookies.accessToken;
-    if (!token) {
-      return res.redirect("/login?error=Vous devez être connecté pour accéder à cette page.");
-    }
+    jwt.verify(accessToken, JWT_SECRET, (err, decoded) => {
+      if (!err) {
+        req.user = decoded;
+        return next();
+      }
 
-    try {
-      req.user = await AuthMiddleware.#verifyToken(token, AuthMiddleware.#JWT_SECRET);
-      next();
-    } catch (error) {
-      res.redirect("/login?error=Session expirée, veuillez vous reconnecter.");
-    }
-  }
-}
+      if (!refreshToken) {
+        return res.redirect(
+          "/login?error=Session expirée, veuillez vous reconnecter."
+        );
+      }
 
-// Validate environment on module load
-AuthMiddleware.validateEnv();
+      jwt.verify(
+        refreshToken,
+        REFRESH_TOKEN_SECRET,
+        (refreshErr, refreshDecoded) => {
+          if (refreshErr) {
+            return res.redirect(
+              "/login?error=Session expirée, veuillez vous reconnecter."
+            );
+          }
 
-module.exports = {
-  generateAccessToken: AuthMiddleware.generateAccessToken.bind(AuthMiddleware),
-  generateRefreshToken: AuthMiddleware.generateRefreshToken.bind(AuthMiddleware),
-  checkToken: AuthMiddleware.checkToken.bind(AuthMiddleware),
-  authenticateToken: AuthMiddleware.authenticateToken.bind(AuthMiddleware)
+          const newAccessToken = jwt.sign(
+            { user: refreshDecoded.user },
+            JWT_SECRET,
+            { expiresIn: "1h" }
+          );
+          res.cookie("accessToken", newAccessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+          });
+
+          req.user = refreshDecoded;
+          next();
+        }
+      );
+    });
+  },
 };
