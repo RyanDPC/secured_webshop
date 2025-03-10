@@ -14,5 +14,5 @@ const sslOptions = {
 const httpsServer = https.createServer(sslOptions, app);
 
 httpsServer.listen(443, () => {
-  console.log("Serveur HTTPS lancé sur https://localhost:443");
+  console.log("Serveur HTTPS lancé sur https://localhost:443/login");
 });

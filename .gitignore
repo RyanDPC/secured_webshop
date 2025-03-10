@@ -54,8 +54,8 @@ coverage/
 *.kate-swp
 *.sublime-workspace
 
-./ssl/server.key
-./ssl/server.cert
+../ssl/server.key
+../ssl/server.cert
 
 # Optional: Ignore static assets
 public/assets/
