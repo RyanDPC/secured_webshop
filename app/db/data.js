@@ -28,6 +28,32 @@ class DatabaseManager {
       });
     });
   }
+  // Méthode pour créer la table t_users si elle n'existe pas
+  static async createTable() {
+    const connection = await this.connectRoot();
+    const query = `
+      CREATE TABLE IF NOT EXISTS t_users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) NOT NULL UNIQUE,
+        email VARCHAR(100) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        admin BOOLEAN DEFAULT FALSE,
+        profile_pic VARCHAR(255) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    return new Promise((resolve, reject) => {
+      connection.query(query, (err) => {
+        if (err) {
+          console.error("Error creating table:", err.message);
+          return reject(err);
+        }
+        console.log("Table t_users is ready");
+        resolve();
+      });
+    });
+  }
 }
 
 module.exports = { DatabaseManager };

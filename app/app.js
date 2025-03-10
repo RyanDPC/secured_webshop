@@ -18,6 +18,7 @@ async function initApp() {
   try {
     // Initialize database
     await DatabaseManager.connectRoot();
+    await DatabaseManager.createTable();
     console.log("Database initialized successfully");
 
     // Setup session
