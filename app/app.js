@@ -4,7 +4,6 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const expressLayouts = require("express-ejs-layouts");
 const { DatabaseManager } = require("./db/data");
-const { connectDb } = require("./db/database");
 const userRoute = require("./routes/User");
 const adminRoute = require("./routes/Admin");
 const pagesRoute = require("./routes/Pages");
@@ -19,7 +18,6 @@ async function initApp() {
   try {
     // Initialize database
     await DatabaseManager.connectRoot();
-    await connectDb();
     console.log("Database initialized successfully");
 
     // Setup session

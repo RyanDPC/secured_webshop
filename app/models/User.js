@@ -1,10 +1,11 @@
-const { db } = require("../db/database");
+const { DatabaseManager } = require("../db/data");
 
 class User {
   // Base query execution helper
-  static #executeQuery(query, params = []) {
+  static async #executeQuery(query, params = []) {
+    const connection = await DatabaseManager.connectRoot();
     return new Promise((resolve, reject) => {
-      db.query(query, params, (err, result) => {
+      connection.query(query, params, (err, result) => {
         if (err) return reject(err);
         resolve(result);
       });
@@ -19,7 +20,7 @@ class User {
     admin = false,
     profile_pic = "",
   }) {
-    const query = `INSERT INTO t_users (username, email, password_hash, admin,profile_pic) 
+    const query = `INSERT INTO t_users (username, email, password_hash, admin, profile_pic) 
                    VALUES (?, ?, ?, ?, ?)`;
     return await this.#executeQuery(query, [
       username,
@@ -29,6 +30,7 @@ class User {
       profile_pic,
     ]);
   }
+
   // Update user
   static async update(id, { username, email, password_hash, admin }) {
     const query = `UPDATE t_users 
@@ -58,24 +60,27 @@ class User {
     const rows = await this.#executeQuery(query, [id]);
     return rows[0];
   }
+
+  // Find user by username
   static async findByUsername(username) {
     const query = `SELECT * FROM t_users WHERE username = ?`;
     const rows = await this.#executeQuery(query, [username]);
     return rows[0];
   }
+
   // Search users by username
   static async searchByUsername(username) {
     const query = `SELECT id, username, email 
                    FROM t_users 
                    WHERE username LIKE ?`;
-    const rows = await this.#executeQuery(query, [username]);
+    const rows = await this.#executeQuery(query, [`%${username}%`]);
     return rows.filter((user) =>
       user.username.toLowerCase().includes(username.toLowerCase())
     );
   }
 
   // Get all users
-  static async showall() {
+  static async showAll() {
     const query = `SELECT * FROM t_users`;
     return await this.#executeQuery(query);
   }
